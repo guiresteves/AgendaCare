@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "47118712381",
+    "project_id": "agendacare-2fbf7",
+    "storage_bucket": "agendacare-2fbf7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47118712381:android:4637b8b2ba432412407454",
+        "android_client_info": {
+          "package_name": "com.example.agendacare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOPHseHc3_d4Q1MN3H0FViLRGl9J5NpvM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
