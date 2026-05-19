@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
@@ -14,38 +15,127 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  bool _acceptedTerms = false;
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _passwordController = TextEditingController();
 
-  Widget _buildInputField({
+  bool _acceptedTerms = false;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _nameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    FocusScope.of(context).unfocus();
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (!_acceptedTerms) {
+      setState(() {
+        _errorMessage = 'Voce precisa aceitar os termos para continuar.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.popUntil(context, (route) => route.isFirst);
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message ?? 'Nao foi possivel criar a conta.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) {
+      return 'Informe seu email.';
+    }
+
+    return null;
+  }
+
+  String? _validateName(String? value) {
+    final name = value?.trim() ?? '';
+    if (name.isEmpty) {
+      return 'Informe seu nome.';
+    }
+
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    final password = value ?? '';
+    if (password.isEmpty) {
+      return 'Informe sua senha.';
+    }
+
+    if (password.length < 6) {
+      return 'A senha precisa ter pelo menos 6 caracteres.';
+    }
+
+    return null;
+  }
+
+  InputDecoration _inputDecoration({
     required IconData icon,
     required String hintText,
-    bool obscureText = false,
   }) {
-    return TextField(
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: const TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w500,
-          color: Colors.black,
-        ),
-        prefixIcon: Icon(icon, color: Colors.black, size: 30),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 24),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32),
-          borderSide: const BorderSide(color: _buttonColor, width: 1.4),
-        ),
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: const TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w500,
+        color: Colors.black,
+      ),
+      prefixIcon: Icon(icon, color: Colors.black, size: 30),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(vertical: 24),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(32),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(32),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(32),
+        borderSide: const BorderSide(color: _buttonColor, width: 1.4),
       ),
     );
   }
@@ -107,17 +197,44 @@ class _SignupPageState extends State<SignupPage> {
                 ),
               ),
               const SizedBox(height: 110),
-              _buildInputField(icon: Icons.email_outlined, hintText: 'Email'),
-              const SizedBox(height: 24),
-              _buildInputField(
-                icon: Icons.person_outline_rounded,
-                hintText: 'Seu Nome',
-              ),
-              const SizedBox(height: 24),
-              _buildInputField(
-                icon: Icons.lock_outline_rounded,
-                hintText: 'Senha',
-                obscureText: true,
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      validator: _validateEmail,
+                      decoration: _inputDecoration(
+                        icon: Icons.email_outlined,
+                        hintText: 'Email',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _nameController,
+                      textInputAction: TextInputAction.next,
+                      validator: _validateName,
+                      decoration: _inputDecoration(
+                        icon: Icons.person_outline_rounded,
+                        hintText: 'Seu Nome',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      validator: _validatePassword,
+                      onFieldSubmitted: (_) => _submit(),
+                      decoration: _inputDecoration(
+                        icon: Icons.lock_outline_rounded,
+                        hintText: 'Senha',
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 28),
               Row(
@@ -131,6 +248,7 @@ class _SignupPageState extends State<SignupPage> {
                       onChanged: (value) {
                         setState(() {
                           _acceptedTerms = value ?? false;
+                          _errorMessage = null;
                         });
                       },
                       activeColor: _buttonColor,
@@ -157,24 +275,12 @@ class _SignupPageState extends State<SignupPage> {
                         children: [
                           TextSpan(
                             text: 'Termos de Uso',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              decoration: TextDecoration.underline,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.w700),
                           ),
-                          TextSpan(
-                            text: ' e ',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
+                          TextSpan(text: ' e '),
                           TextSpan(
                             text: 'Politica de Privacidade',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              decoration: TextDecoration.underline,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.w700),
                           ),
                         ],
                       ),
@@ -182,26 +288,53 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                 ],
               ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 18),
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.redAccent,
+                  ),
+                ),
+              ],
             ],
           ),
           Column(
             children: [
               const SizedBox(height: 48),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _buttonColor,
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: _buttonColor.withValues(alpha: 0.7),
                   minimumSize: const Size.fromHeight(62),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(36),
                   ),
                 ),
-                child: const Text(
-                  'Criar Conta',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : const Text(
+                        'Criar Conta',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
               const SizedBox(height: 22),
               Row(

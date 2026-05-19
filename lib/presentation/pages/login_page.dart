@@ -15,12 +15,7 @@ class LoginPage extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.construction_rounded,
-                size: 56,
-                color: _placeholderButtonColor,
-              ),
+            children: [              
               const SizedBox(height: 20),
               const Text(
                 'Login',
