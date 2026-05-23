@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'confirm_family_join_page.dart';
 
 class JoinFamilyPage extends StatefulWidget {
   const JoinFamilyPage({super.key});
@@ -101,6 +102,7 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: TextField(
+                    controller: _codigoController,
                     textAlign: TextAlign.center,
                     textCapitalization: TextCapitalization.characters,
                     style: const TextStyle(
@@ -129,21 +131,19 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                 const SizedBox(height: 14),
 
                 Center(
-                  child: GestureDetector(
-                    onTap: () {
-                      // TODO: mostrar modal ou navegar para tela de ajuda
-                    },
-                    child: const Text(
-                      'Onde encontro meu código?',
-                      style: TextStyle(
+                  child: TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF4195CC),
+                      textStyle: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF4195CC),
                         decoration: TextDecoration.underline,
                         decorationColor: Color(0xFF4195CC),
                         decorationThickness: 1.2,
                       ),
                     ),
+                    child: const Text('Onde encontro meu código?'),
                   ),
                 ),
               ],
@@ -154,7 +154,12 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                 const SizedBox(height: 40),
                 ElevatedButton(
                   onPressed: () {
-                    // TODO: validar codigo
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ConfirmFamilyJoin(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF4195CC),
