@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'family_welcome_page.dart';
 
 const _familyName = 'Familia Carvalho';
 const _familyDescription =
@@ -19,8 +20,6 @@ class ConfirmFamilyJoin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -54,7 +53,6 @@ class ConfirmFamilyJoin extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 8),
-
                 const Text(
                   'Confirmar entrada',
                   textAlign: TextAlign.center,
@@ -64,9 +62,7 @@ class ConfirmFamilyJoin extends StatelessWidget {
                     color: Colors.black,
                   ),
                 ),
-
                 const SizedBox(height: 6),
-
                 const Text(
                   'Você está prestes a entrar na família',
                   textAlign: TextAlign.center,
@@ -76,16 +72,14 @@ class ConfirmFamilyJoin extends StatelessWidget {
                     color: Color(0xFF7E7777),
                   ),
                 ),
-
                 const SizedBox(height: 28),
-
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      const BoxShadow(
+                    boxShadow: const [
+                      BoxShadow(
                         color: Color.fromRGBO(0, 0, 0, 0.06),
                         blurRadius: 12,
                         offset: Offset(0, 4),
@@ -141,11 +135,9 @@ class ConfirmFamilyJoin extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 16),
                       const Divider(height: 1, color: Color(0xFFEEEEEE)),
                       const SizedBox(height: 16),
-
                       Row(
                         children: [
                           _buildAvatar('GR', const Color(0xFF4195CC)),
@@ -172,9 +164,7 @@ class ConfirmFamilyJoin extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 16),
-
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -190,9 +180,7 @@ class ConfirmFamilyJoin extends StatelessWidget {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
                       Text(
                         'Dependentes (${_dependentes.length})',
                         style: const TextStyle(
@@ -201,9 +189,7 @@ class ConfirmFamilyJoin extends StatelessWidget {
                           color: Colors.black,
                         ),
                       ),
-
                       const SizedBox(height: 12),
-
                       ..._dependentes.map(
                         (d) => _DependenteItem(
                           iniciais: d['iniciais']!,
@@ -214,9 +200,7 @@ class ConfirmFamilyJoin extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 const Text(
                   'Tudo certo? Deseja continuar?',
                   textAlign: TextAlign.center,
@@ -228,17 +212,15 @@ class ConfirmFamilyJoin extends StatelessWidget {
                 ),
               ],
             ),
-
             Column(
               children: [
                 const SizedBox(height: 24),
-
                 ElevatedButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Entrada confirmada.'),
-                        behavior: SnackBarBehavior.floating,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FamilyWelcomePage(),
                       ),
                     );
                   },
@@ -256,9 +238,7 @@ class ConfirmFamilyJoin extends StatelessWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
@@ -275,7 +255,6 @@ class ConfirmFamilyJoin extends StatelessWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
-
                 const SizedBox(height: 32),
               ],
             ),

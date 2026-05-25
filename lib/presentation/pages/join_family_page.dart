@@ -23,7 +23,6 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -48,7 +47,6 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
         centerTitle: true,
         actions: const [SizedBox(width: 48)],
       ),
-
       body: GradientScreenLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -58,7 +56,6 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 8),
-
                 const Text(
                   'Entrar na Família',
                   textAlign: TextAlign.center,
@@ -68,9 +65,7 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                     color: Colors.black,
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 const Text(
                   'Digite o código de acesso que você recebeu do administrador da família',
                   textAlign: TextAlign.center,
@@ -81,9 +76,7 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                     height: 1.2,
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
                 const Text(
                   'Código de acesso',
                   textAlign: TextAlign.center,
@@ -93,9 +86,7 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                     color: Colors.black,
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 Container(
                   decoration: BoxDecoration(
                     color: const Color.fromARGB(255, 255, 255, 255),
@@ -127,9 +118,7 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 14),
-
                 Center(
                   child: TextButton(
                     onPressed: () {},
@@ -148,7 +137,6 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                 ),
               ],
             ),
-
             Column(
               children: [
                 const SizedBox(height: 40),
@@ -162,7 +150,7 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF4195CC),
+                    backgroundColor: const Color(0xFF4195CC),
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(56),
                     elevation: 0,
