@@ -1,17 +1,24 @@
-# agendacare
+# 📋 Backlog — AgendaCare
 
-A new Flutter project.
+## 📌 Visão Geral
 
-## Getting Started
+O AgendaCare é um aplicativo mobile desenvolvido em Flutter + Dart com Firebase, voltado para o gerenciamento de tarefas, compromissos e rotinas de cuidado familiar.
 
-This project is a starting point for a Flutter application.
+O objetivo do sistema é auxiliar famílias e cuidadores na organização de atividades relacionadas a crianças, idosos ou pessoas dependentes.
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+# 🗂️ Estrutura do Backlog
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+| Módulo | Descrição | Responsável(s) | Status |
+|---|---|---|---|
+| 🛠️ SETUP | Configuração inicial do projeto e arquitetura base | Guilherme | ✅ |
+| 🔐 AUTH | Sistema de autenticação de usuários | Gabriel | ⬜ |
+| 👤 USER/CARE | Perfil e gerenciamento de usuários/Dependentes | Gabriel | ⬜ |
+| 👨‍👩‍👧 GROUP | Gerenciamento de grupos familiares | Kauan | ⬜ |
+| ✅ TASK | Gestão de tarefas | Guilherme | ⬜ |
+| 🏠 HOME/AGENDA | Dashboard principal | Gustavo | ⬜ |
+| 🔔 NOTIFICATION | Sistema de notificações | Leonidas | ⬜ |
+| 📜 HISTORY | Histórico de atividades | Iago | ⬜ |
+| 
+
