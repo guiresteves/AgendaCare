@@ -158,4 +158,44 @@ class _AddTaskPageState extends State<AddTaskPage> {
         final m = _selectedTime!.minute.toString().padLeft(2, '0');
         return '$h:$m';
     }
+
+    // Validar e Salvar Tarefa
+
+    void _saveTask() {
+        FocusScope.of(context).unfocus();
+
+        final valid = _formKey.currentState!.validate();
+
+        if (!valid) {
+            setState(() {
+                _errorMessage = 'Por favor, preencha os campos obrigatórios.';
+            });
+            return;
+        }
+
+        if (_selectedDate == null || _selectedTime == null) {
+            setState(() {
+                _errorMessage = 'Por favor, selecione data e hora.';
+            });
+            return;
+        }
+
+        if (_selectedResponsaveis.isEmpty) {
+            setState(() {
+                _errorMessage = 'Por favor, selecione pelo menos um responsável.';
+            });
+            return;
+        }
+
+        setState(() {
+            _errorMessage = null;
+        });
+
+        Navigator.popUntil(context, (route) => route.isFirst);
+    }
+
+
+    // Build da Página
+
+    
 }
