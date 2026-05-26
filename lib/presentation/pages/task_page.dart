@@ -469,5 +469,173 @@ class _AddTaskPageState extends State<AddTaskPage> {
         );
     }
 
+    // Wifgets reutilizáveis para itens da interface
+
+    class _DateTimeButton extends StatelessWidget {
+        const _DateTimeButton({
+            required this.label,
+            required this.isSelected,
+            required this.onTap,
+        });
+        
+        final String label;
+        final bool isSelected;
+        final VoidCallback onTap;
+        
+        @override
+        Widget build(BuildContext context) {
+            return GestureDetector(
+                onTap: onTap,
+                child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                        color: AppColors.cardBackground,
+                        borderRadius: BorderRadius.circular(14),
+                        border: isSelected
+                        ? Border.all(color: AppColors.primaryBlue, width: 1.4)
+                        : null,
+                    ),
+                    child: Center(
+                        child: Text(
+                            label,
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected ? AppColors.primaryBlue : AppColors.textPrimary,
+                            ),
+                        ),
+                    ),
+                ),
+            );
+        }
+    }
+        
+    class _PersonTile extends StatelessWidget {
+        const _PersonTile({
+            required this.person,
+            required this.isChecked,
+            required this.showDivider,
+            required this.onChanged,
+        });
+        
+        final _Person person;
+        final bool isChecked;
+        final bool showDivider;
+        final ValueChanged<bool?> onChanged;
+        
+        @override
+        Widget build(BuildContext context) {
+            return Column(
+                children: [
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        child: Row(
+                            children: [
+                                Container(
+                                    width: 42,
+                                    height: 42,
+                                    decoration: BoxDecoration(
+                                        color: person.avatarColor,
+                                        shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                        child: Text(
+                                            person.initials,
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textOnDark,
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                    child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                            Text(
+                                                person.name,
+                                                style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.textPrimary,
+                                                ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                                person.role,
+                                                style: const TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: AppColors.textMuted,
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: Checkbox(
+                                        value: isChecked,
+                                        onChanged: onChanged,
+                                        activeColor: AppColors.primaryBlue,
+                                        checkColor: AppColors.textOnDark,
+                                        side: const BorderSide(
+                                            color: AppColors.checkboxBorder,
+                                            width: 1.6,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        visualDensity: VisualDensity.compact,
+                                    ),
+                                ),
+                            ],
+                        ),
+                    ),
+                    if (showDivider)
+                    const Divider(
+                        height: 1,
+                        thickness: 1,
+                        indent: 68,
+                        endIndent: 14,
+                        color: AppColors.divider,
+                    ),
+                ],
+            );
+        }
+    }
     
+    class _ConfirmButton extends StatelessWidget {
+        const _ConfirmButton({required this.onTap});
+        
+        final VoidCallback onTap;
+        
+        @override
+        Widget build(BuildContext context) {
+            return GestureDetector(
+                onTap: onTap,
+                child: Container(
+                    height: 56,
+                    decoration: BoxDecoration(
+                        color: AppColors.confirmGreen,
+                        borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: const Center(
+                        child: Text(
+                            'Confirmar',
+                            style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textOnDark,
+                            ),
+                        ),
+                    ),
+                ),
+            );
+        }
+    }   
 }
