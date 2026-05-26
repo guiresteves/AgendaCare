@@ -137,4 +137,25 @@ class _AddTaskPageState extends State<AddTaskPage> {
             });
         }
     }
+
+    // Formatar Data e Hora para exibição
+
+    String get _formattedDate {
+        if (_selectedDate == null) { 
+            return 'Selecionar Data';
+        }
+        final d = _selectedDate!;
+        return '${d.day.toString().padLeft(2, '0')}/'
+            '${d.month.toString().padLeft(2, '0')}/'
+            '${d.year}';
+    }
+
+    String get _formattedTime {
+        if (_selectedTime == null) {
+            return 'Selecionar Hora';
+        }
+        final h = _selectedTime!.hour.toString().padLeft(2, '0');
+        final m = _selectedTime!.minute.toString().padLeft(2, '0');
+        return '$h:$m';
+    }
 }
