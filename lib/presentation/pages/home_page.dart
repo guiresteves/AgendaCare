@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return AgendaScaffold(
-      activeTab: AgendaTab.home,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

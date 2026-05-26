@@ -49,7 +49,6 @@ class GroupPage extends StatelessWidget {
     ];
 
     return AgendaScaffold(
-      activeTab: AgendaTab.group,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

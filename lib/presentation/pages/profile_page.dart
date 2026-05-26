@@ -1,8 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../widgets/gradient_screen_layout.dart';
 import 'change_password_page.dart';
-import 'welcome_page.dart';
 
 const _primaryBlue = Color(0xFF4A97CF);
 const _textDark = Colors.black;
@@ -11,74 +10,20 @@ const _textMuted = Color(0xFF7E7777);
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    final color = isActive ? Colors.black : const Color(0xFF8A9BB0);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _desconectar(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const WelcomePage()),
-          (route) => false,
-    );
+  Future<void> _desconectar() async {
+    await FirebaseAuth.instance.signOut();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      extendBody: true,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: _primaryBlue,
-        shape: const CircleBorder(),
-        elevation: 2,
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(Icons.home_filled, 'Home', false),
-              _buildNavItem(Icons.people_alt_outlined, 'Grupo', false),
-              const SizedBox(width: 40),
-              _buildNavItem(Icons.calendar_today, 'Histórico', false),
-              _buildNavItem(Icons.person_outline, 'Perfil', true),
-            ],
-          ),
-        ),
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              Color(0xFFD4F0F7),
-            ],
+            colors: [Colors.white, Color(0xFFD4F0F7)],
           ),
         ),
         child: SafeArea(
@@ -87,7 +32,10 @@ class ProfilePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -127,20 +75,23 @@ class ProfilePage extends StatelessWidget {
                       ),
                       onPressed: () {},
                       padding: EdgeInsets.zero,
-                      constraints:
-                      const BoxConstraints(minWidth: 36, minHeight: 36),
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
                     ),
                   ],
                 ),
               ),
-
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 132),
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
@@ -205,14 +156,14 @@ class ProfilePage extends StatelessWidget {
                             ),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
-                                minWidth: 32, minHeight: 32),
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
                           ),
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     _SimpleMenuTile(
                       label: 'Alterar Senha',
                       onTap: () {
@@ -225,9 +176,7 @@ class ProfilePage extends StatelessWidget {
                       },
                       showChevron: false,
                     ),
-
                     const SizedBox(height: 20),
-
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -267,7 +216,7 @@ class ProfilePage extends StatelessWidget {
                             color: Color(0xFFE8EFF5),
                           ),
                           _MenuTile(
-                            label: 'Notificações',
+                            label: 'Notificacoes',
                             onTap: () {},
                             isFirst: false,
                             isLast: true,
@@ -275,12 +224,12 @@ class ProfilePage extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     _SimpleMenuTile(
                       label: 'Desconectar',
-                      onTap: () => _desconectar(context),
+                      onTap: () {
+                        _desconectar();
+                      },
                       showChevron: false,
                       labelColor: Colors.redAccent,
                     ),

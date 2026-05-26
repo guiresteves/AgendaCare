@@ -29,6 +29,7 @@ class _TaskRecord {
 
 class _Avatar {
   const _Avatar({required this.initials, required this.color});
+
   final String initials;
   final Color color;
 }
@@ -66,66 +67,16 @@ const _sampleTasks = [
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
 
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    final color = isActive ? Colors.black : const Color(0xFF8A9BB0);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      extendBody: true,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: _primaryBlue,
-        shape: const CircleBorder(),
-        elevation: 2,
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(Icons.home_filled, 'Home', false),
-              _buildNavItem(Icons.people_alt_outlined, 'Grupo', false),
-              const SizedBox(width: 40),
-              _buildNavItem(Icons.calendar_today, 'Histórico', true),
-              _buildNavItem(Icons.person_outline, 'Perfil', false),
-            ],
-          ),
-        ),
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              Color(0xFFD4F0F7),
-            ],
+            colors: [Colors.white, Color(0xFFD4F0F7)],
           ),
         ),
         child: SafeArea(
@@ -133,13 +84,13 @@ class HistoryPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _AppBar(),
+              const _AppBar(),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
                   children: [
                     const SizedBox(height: 12),
-                    Align(
+                    const Align(
                       alignment: Alignment.centerLeft,
                       child: _FilterChip(),
                     ),
@@ -157,6 +108,8 @@ class HistoryPage extends StatelessWidget {
 }
 
 class _AppBar extends StatelessWidget {
+  const _AppBar();
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -197,7 +150,10 @@ class _AppBar extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: _primaryBlue),
+                icon: const Icon(
+                  Icons.notifications_outlined,
+                  color: _primaryBlue,
+                ),
                 onPressed: () {},
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -223,6 +179,8 @@ class _AppBar extends StatelessWidget {
 }
 
 class _FilterChip extends StatelessWidget {
+  const _FilterChip();
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -233,9 +191,9 @@ class _FilterChip extends StatelessWidget {
           color: _primaryBlue,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Row(
+        child: const Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Icon(Icons.calendar_today_outlined, color: Colors.white, size: 16),
             SizedBox(width: 8),
             Text(
