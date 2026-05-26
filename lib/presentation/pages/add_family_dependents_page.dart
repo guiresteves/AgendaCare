@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/gradient_screen_layout.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'create_dependent_page.dart';
+import 'share_family_code_page.dart';
 
 class AddDependentsPage extends StatefulWidget {
   const AddDependentsPage({super.key});
@@ -218,7 +219,14 @@ class _AddDependentsPageState extends State<AddDependentsPage> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddPersonsPage(),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4A94CF),
                   foregroundColor: Colors.white,
