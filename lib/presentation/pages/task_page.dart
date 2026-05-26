@@ -39,7 +39,7 @@ final _mockResponsaveis = [
         avatarColor: AppColors.avatarPink,
         initials: 'LM',
     ),
-]
+];
 
 final _mockDependentes = [
     _Person(
@@ -196,6 +196,278 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
 
     // Build da Página
+
+    @override
+    Widget build(BuildContext context) {
+        return Scaffold(
+            body: Container(
+                decoration: const BoxDecoration(
+                    gradient: AppColors.backgroundGradient,
+                ),
+                child: SafeArea(
+                    child: Column(
+                        children: [
+                            _buildHeader(context),
+                            Expanded(
+                                child: SingleChildScrollView(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 12,
+                                    ),
+                                    child: Form(
+                                        key: _formKey,
+                                        child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            children: [
+                                                _buildTitleField(),
+                                                const SizedBox(height: 12),
+                                                _buildDetailsField(),
+                                                const SizedBox(height: 16),
+                                                Row(
+                                                    children: [
+                                                        Expanded(
+                                                            child: _DateTimeButton(
+                                                                label: _dateLabel,
+                                                                isSelected: _selectedDate != null,
+                                                                onTap: _pickDate,
+                                                            ),
+                                                        ),
+                                                        const SizedBox(width: 12),
+                                                        Expanded(
+                                                            child: _DateTimeButton(
+                                                                label: _timeLabel,
+                                                                isSelected: _selectedTime != null,
+                                                                onTap: _pickTime,
+                                                            ),
+                                                        ),
+                                                    ],
+                                                ),
+                                                const SizedBox(height: 20),
+                                                _buildSectionCard(
+                                                    title: 'Responsáveis',
+                                                    people: _mockResponsaveis,
+                                                    selected: _selectedResponsaveis,
+                                                ),
+                                                const SizedBox(height: 14),
+                                                _buildSectionCard(
+                                                    title: 'Dependentes',
+                                                    people: _mockDependentes,
+                                                    selected: _selectedDependentes,
+                                                ),
+                                                const SizedBox(height: 16),
+                                                if (_errorMessage != null)
+                                                Padding(
+                                                    padding: const EdgeInsets.only(bottom: 8),
+                                                    child: Text(
+                                                        _errorMessage!,
+                                                        textAlign: TextAlign.center,
+                                                        style: const TextStyle(
+                                                            fontSize: 13,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: AppColors.error,
+                                                        ),
+                                                    ),
+                                                ),
+                                                _ConfirmButton(onTap: _confirm),
+                                                const SizedBox(height: 16),
+                                            ],
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ],
+                    ),
+                ),
+            ),
+        );
+    }
+
+    // Widgets auxiliares para construção da interface
+
+    Widget _buildHeader(BuildContext context) {
+        return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Stack(
+                alignment: Alignment.center,
+                children: [
+                    Align(
+                        alignment: Alignment.centerLeft,
+                        child: InkWell(
+                            borderRadius: BorderRadius.circular(28),
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: const Color(0xFF484848),
+                                        width: 1.8,
+                                    ),
+                                ),
+                                child: const Icon(
+                                    Icons.arrow_back_rounded,
+                                    size: 22,
+                                    color: Color(0xFF484848),
+                                ),
+                            ),
+                        ),
+                    ),
+                    const Text(
+                        'Criar Tarefa',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                        ),
+                    ),
+                ],
+            ),
+        );
+    }
+ 
+    Widget _buildTitleField() {
+        return TextFormField(
+            controller: _titleController,
+            textInputAction: TextInputAction.next,
+            validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                    return 'Informe o nome da tarefa.';
+                }
+                return null;
+            },
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            decoration: InputDecoration(
+                hintText: 'Digite o nome da Tarefa',
+                hintStyle: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textMuted,
+                ),
+                suffixIcon: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textMuted,
+                ),
+                filled: true,
+                fillColor: AppColors.cardBackground,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 18,
+                ),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                        color: AppColors.inputFocusBorder,
+                        width: 1.4,
+                    ),
+                ),
+                errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.error, width: 1.2),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.error, width: 1.4),
+                ),
+            ),
+        ),
+    }
+ 
+    Widget _buildDetailsField() {
+        return TextFormField(
+            controller: _detailsController,
+            maxLines: 4,
+            textInputAction: TextInputAction.newline,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+            decoration: InputDecoration(
+                hintText: 'Adicione detalhes da Tarefa (opcional)...',
+                hintStyle: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textMuted,
+                ),
+                filled: true,
+                fillColor: AppColors.cardBackground,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 16,
+                ),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                        color: AppColors.inputFocusBorder,
+                        width: 1.4,
+                    ),
+                ),
+            ),
+        );
+    }
+ 
+    Widget _buildSectionCard({
+        required String title,
+        required List<_Person> people,
+        required Set<int> selected,
+    }) {
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+                Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 10),
+                    child: Text(
+                        title,
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                        ),
+                    ),
+                ),
+                Container(
+                    decoration: BoxDecoration(
+                        color: AppColors.cardBackground,
+                        borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                        children: List.generate(people.length, (i) {
+                            final person = people[i];
+                            final isLast = i == people.length - 1;
+                            return _PersonTile(
+                                person: person,
+                                isChecked: selected.contains(i),
+                                showDivider: !isLast,
+                                onChanged: (val) {
+                                    setState(() {       
+                                        if (val == true) {
+                                            selected.add(i);
+                                        } else {
+                                            selected.remove(i);
+                                        }
+                                        _errorMessage = null;
+                                    });
+                                },
+                            );
+                        }),
+                    ),
+                ),
+            ],
+        );
+    }
 
     
 }
