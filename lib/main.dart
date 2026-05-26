@@ -1,3 +1,4 @@
+import 'package:agendacare/presentation/pages/history_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: WelcomePage(),
+      home: WelcomePage(),//
     );
   }
 }
