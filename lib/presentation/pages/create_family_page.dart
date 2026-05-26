@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
+import 'add_family_dependents_page.dart';
 
 class CreateFamilyPage extends StatefulWidget {
   const CreateFamilyPage({super.key});
@@ -153,7 +154,14 @@ class _CreateFamilyPageState extends State<CreateFamilyPage> {
           Column(
             children: [
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddDependentsPage(),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4195CC),
                   foregroundColor: Colors.white,

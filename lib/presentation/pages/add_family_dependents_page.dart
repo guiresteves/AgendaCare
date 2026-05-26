@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'create_dependent_page.dart';
 
 class AddDependentsPage extends StatefulWidget {
   const AddDependentsPage({super.key});
@@ -18,209 +20,221 @@ class _AddDependentsPageState extends State<AddDependentsPage> {
   @override
   Widget build(BuildContext context) {
     return GradientScreenLayout(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF484848),
-                          width: 1.4,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_rounded,
-                        size: 20,
-                        color: Color(0xFF484848),
-                      ),
+      child: IntrinsicHeight(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.black54),
+                  ),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 16,
+                      color: Colors.black87,
                     ),
                   ),
-                  const Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _ProgressDot(isActive: false),
-                        SizedBox(width: 4),
-                        _ProgressDot(isActive: true),
-                        SizedBox(width: 4),
-                        _ProgressDot(isActive: false),
-                        SizedBox(width: 4),
-                        _ProgressDot(isActive: false),
-                      ],
-                    ),
+                ),
+                const Spacer(),
+                const Row(
+                  children: [
+                    _ProgressDot(isActive: false),
+                    SizedBox(width: 6),
+                    _ProgressDot(isActive: true),
+                    SizedBox(width: 6),
+                    _ProgressDot(isActive: false),
+                    SizedBox(width: 6),
+                    _ProgressDot(isActive: false),
+                  ],
+                ),
+                const Spacer(),
+                const SizedBox(width: 36),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Adicione Dependente',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Adicione os familiares que serão cuidados',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15, color: Color(0xFF8A8A8A)),
+            ),
+            const SizedBox(height: 28),
+            ..._dependentes.asMap().entries.map((entry) {
+              final i = entry.key;
+              final d = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 18),
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F3F3),
+                    borderRadius: BorderRadius.circular(26),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.12),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 34),
-                ],
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Adicione Dependente',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Adicione os familiares que serao cuidados',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xFF7E7777),
-                ),
-              ),
-              const SizedBox(height: 24),
-              ..._dependentes.asMap().entries.map((entry) {
-                final i = entry.key;
-                final d = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFF4195CC),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'GU',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFE8C2EB),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'GU',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF9A2CA0),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    d['nome'],
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black,
-                                    ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  d['nome'],
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
                                   ),
-                                  Text(
-                                    d['papel'],
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Color(0xFF7E7777),
-                                    ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  d['papel'],
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF8A8A8A),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              onPressed: () {
-                                setState(() => _dependentes.removeAt(i));
-                              },
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Color(0xFFE57373),
-                              ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _dependentes.removeAt(i));
+                            },
+                            icon: SvgPicture.asset(
+                              'assets/icons/Trash_Full.svg',
+                              width: 22,
+                              height: 22,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Vai usar o aplicativo?',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF7E7777),
-                              ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      const Divider(height: 1, color: Color(0xFFE3E3E3)),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Vai usar o aplicativo?',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
                             ),
-                            Switch(
+                          ),
+                          SizedBox(
+                            width: 54,
+                            height: 32,
+                            child: Switch(
                               value: d['usaApp'],
                               onChanged: (val) {
                                 setState(() => _dependentes[i]['usaApp'] = val);
                               },
-                              activeColor: const Color(0xFF4CAF50),
+                              activeTrackColor: const Color(0xFF34C759),
+                              inactiveThumbColor: Colors.white,
+                              inactiveTrackColor: const Color(0xFF9E9E9E),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-              const SizedBox(height: 4),
-              TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF7E7777),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                child: const Text('Adicionar Dependente'),
-              ),
-            ],
-          ),
-          Column(
-            children: [
-              ElevatedButton(
-                onPressed: () {},
+              );
+            }),
+            const Spacer(),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NewDependentPage(),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4195CC),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(56),
+                  backgroundColor: const Color(0xFFF7F3F3),
+                  foregroundColor: Colors.black,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 child: const Text(
-                  'Proximo passo',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  'Adicionar Dependente',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
-              const SizedBox(height: 32),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4A94CF),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  'Próximo passo',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -233,15 +247,12 @@ class _ProgressDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: isActive ? 13 : 11,
-      height: isActive ? 13 : 11,
+    return Container(
+      width: 8,
+      height: 8,
       decoration: BoxDecoration(
-        color: isActive
-            ? const Color.fromARGB(255, 0, 0, 0)
-            : const Color.fromARGB(255, 173, 173, 173),
-        borderRadius: BorderRadius.circular(8),
+        shape: BoxShape.circle,
+        color: isActive ? Colors.black : const Color(0xFFBDBDBD),
       ),
     );
   }
