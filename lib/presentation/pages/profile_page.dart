@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'change_password_page.dart';
+import 'edit_profile_page.dart';
 
 const _primaryBlue = Color(0xFF4A97CF);
 const _textDark = Colors.black;
@@ -148,7 +149,19 @@ class ProfilePage extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProfilePage(
+                                    initialProfile:
+                                        EditableProfileDetails.fromUser(
+                                          FirebaseAuth.instance.currentUser,
+                                        ),
+                                  ),
+                                ),
+                              );
+                            },
                             icon: const Icon(
                               Icons.edit_outlined,
                               color: _textMuted,
