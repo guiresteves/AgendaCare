@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../widgets/gradient_screen_layout.dart';
+import 'family_setup_page.dart';
 import 'login_page.dart';
 
 const _buttonColor = Color(0xFF4A97CF);
@@ -52,16 +54,19 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+      // await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      //   email: _emailController.text.trim(),
+      //   password: _passwordController.text,
+      // );
+
+      // if (!mounted) {
+      //   return;
+      // }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const FamilySetupPage()),
       );
-
-      if (!mounted) {
-        return;
-      }
-
-      Navigator.popUntil(context, (route) => route.isFirst);
     } on FirebaseAuthException catch (error) {
       if (!mounted) {
         return;
@@ -111,7 +116,7 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   InputDecoration _inputDecoration({
-    required IconData icon,
+    required String iconAsset,
     required String hintText,
   }) {
     return InputDecoration(
@@ -121,7 +126,16 @@ class _SignupPageState extends State<SignupPage> {
         fontWeight: FontWeight.w500,
         color: Colors.black,
       ),
-      prefixIcon: Icon(icon, color: Colors.black, size: 30),
+      prefixIcon: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        child: SvgPicture.asset(
+          iconAsset,
+          width: 22,
+          height: 22,
+          fit: BoxFit.contain,
+        ),
+      ),
+      prefixIconConstraints: const BoxConstraints(minWidth: 64, minHeight: 64),
       filled: true,
       fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(vertical: 24),
@@ -153,29 +167,21 @@ class _SignupPageState extends State<SignupPage> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(20),
                   onTap: () {
                     Navigator.pop(context);
                   },
-                  child: Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF484848),
-                        width: 2,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back_rounded,
-                      size: 30,
-                      color: Color(0xFF484848),
+                  child: SizedBox(
+                    width: 34,
+                    height: 34,
+                    child: SvgPicture.asset(
+                      'assets/icons/Back.svg',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 70),
+              const SizedBox(height: 52),
               const Text(
                 'Criar conta',
                 textAlign: TextAlign.center,
@@ -196,7 +202,7 @@ class _SignupPageState extends State<SignupPage> {
                   height: 1.3,
                 ),
               ),
-              const SizedBox(height: 110),
+              const SizedBox(height: 56),
               Form(
                 key: _formKey,
                 child: Column(
@@ -207,7 +213,7 @@ class _SignupPageState extends State<SignupPage> {
                       textInputAction: TextInputAction.next,
                       validator: _validateEmail,
                       decoration: _inputDecoration(
-                        icon: Icons.email_outlined,
+                        iconAsset: 'assets/icons/email.svg',
                         hintText: 'Email',
                       ),
                     ),
@@ -217,7 +223,7 @@ class _SignupPageState extends State<SignupPage> {
                       textInputAction: TextInputAction.next,
                       validator: _validateName,
                       decoration: _inputDecoration(
-                        icon: Icons.person_outline_rounded,
+                        iconAsset: 'assets/icons/user.svg',
                         hintText: 'Seu Nome',
                       ),
                     ),
@@ -229,7 +235,7 @@ class _SignupPageState extends State<SignupPage> {
                       validator: _validatePassword,
                       onFieldSubmitted: (_) => _submit(),
                       decoration: _inputDecoration(
-                        icon: Icons.lock_outline_rounded,
+                        iconAsset: 'assets/icons/cadeado.svg',
                         hintText: 'Senha',
                       ),
                     ),
@@ -265,7 +271,7 @@ class _SignupPageState extends State<SignupPage> {
                   const Expanded(
                     child: Text.rich(
                       TextSpan(
-                        text: 'Ao criar uma conta, voce concorda com nossos\n',
+                        text: 'Ao criar uma conta, voce concorda com nossos ',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -275,12 +281,12 @@ class _SignupPageState extends State<SignupPage> {
                         children: [
                           TextSpan(
                             text: 'Termos de Uso',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                           TextSpan(text: ' e '),
                           TextSpan(
                             text: 'Politica de Privacidade',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -304,7 +310,7 @@ class _SignupPageState extends State<SignupPage> {
           ),
           Column(
             children: [
-              const SizedBox(height: 48),
+              const SizedBox(height: 28),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
