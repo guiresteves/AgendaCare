@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../widgets/gradient_screen_layout.dart';
+import 'join_family_page.dart';
+import 'create_family_page.dart';
+
 
 const _buttonColor = Color(0xFF4195CC);
 const _mutedTextColor = Color(0xFF7E7777);
@@ -68,9 +71,16 @@ class FamilySetupPage extends StatelessWidget {
             description: 'Seja o primeiro a organizar sua familia',
           ),
           const SizedBox(height: 14),
-          IgnorePointer(
+          Center(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateFamilyPage(),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _buttonColor,
                 foregroundColor: Colors.white,
@@ -93,9 +103,16 @@ class FamilySetupPage extends StatelessWidget {
             description: 'Participe de uma familia ja existente',
           ),
           const SizedBox(height: 14),
-          IgnorePointer(
+          Center(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const JoinFamilyPage(),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _buttonColor,
                 foregroundColor: Colors.white,

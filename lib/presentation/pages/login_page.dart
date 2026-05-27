@@ -43,14 +43,14 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+      // await FirebaseAuth.instance.signInWithEmailAndPassword(
+      //   email: _emailController.text.trim(),
+      //   password: _passwordController.text,
+      // );
 
-      if (!mounted) {
-        return;
-      }
+      // if (!mounted) {
+      //   return;
+      // }
 
       Navigator.pop(context);
     } on FirebaseAuthException catch (error) {

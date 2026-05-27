@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
+import './content_page/content_page.dart';
 
 class FamilyWelcomePage extends StatelessWidget {
   const FamilyWelcomePage({super.key});
@@ -60,7 +61,14 @@ class FamilyWelcomePage extends StatelessWidget {
           Column(
             children: [
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ContentPage(),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4195CC),
                   foregroundColor: Colors.white,

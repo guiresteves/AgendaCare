@@ -54,14 +54,14 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+      // await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      //   email: _emailController.text.trim(),
+      //   password: _passwordController.text,
+      // );
 
-      if (!mounted) {
-        return;
-      }
+      // if (!mounted) {
+      //   return;
+      // }
 
       Navigator.pushReplacement(
         context,

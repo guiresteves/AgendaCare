@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
+import './content_page/content_page.dart';
 
 class AddPersonsPage extends StatelessWidget {
   const AddPersonsPage({super.key});
@@ -154,7 +155,22 @@ class AddPersonsPage extends StatelessWidget {
                     decorationColor: Color(0xFF4195CC),
                   ),
                 ),
-                child: const Text('Finalizar grupo'),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ContentPage(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Finalizar grupo',
+                    style: TextStyle(
+                      color: Color(0xFF4195CC), // ou outra cor
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
             ],
