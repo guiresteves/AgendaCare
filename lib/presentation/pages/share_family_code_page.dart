@@ -41,10 +41,14 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
   String _gerarCodigo() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final rand = Random.secure();
-    final parte1 =
-        List.generate(3, (_) => chars[rand.nextInt(chars.length)]).join();
-    final parte2 =
-        List.generate(3, (_) => chars[rand.nextInt(chars.length)]).join();
+    final parte1 = List.generate(
+      3,
+      (_) => chars[rand.nextInt(chars.length)],
+    ).join();
+    final parte2 = List.generate(
+      3,
+      (_) => chars[rand.nextInt(chars.length)],
+    ).join();
     return '$parte1-$parte2';
   }
 
@@ -56,10 +60,8 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
       final db = FirebaseFirestore.instance;
 
       final codigoResponsavel = _gerarCodigo();
-      final temDependenteComApp =
-          widget.dependentes.any((d) => d.usaApp);
-      final codigoDependente =
-          temDependenteComApp ? _gerarCodigo() : null;
+      final temDependenteComApp = widget.dependentes.any((d) => d.usaApp);
+      final codigoDependente = temDependenteComApp ? _gerarCodigo() : null;
 
       final grupoRef = await db.collection('grupos').add({
         'nome': widget.nomeGrupo,
@@ -70,10 +72,9 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
         if (codigoDependente != null) 'codigoDependente': codigoDependente,
       });
 
-      await db
-          .collection('usuarios')
-          .doc(user.uid)
-          .set({'grupoId': grupoRef.id}, SetOptions(merge: true));
+      await db.collection('usuarios').doc(user.uid).set({
+        'grupoId': grupoRef.id,
+      }, SetOptions(merge: true));
 
       await db
           .collection('grupos')
@@ -81,12 +82,12 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
           .collection('membros')
           .doc(user.uid)
           .set({
-        'uid': user.uid,
-        'papel': 'responsavel',
-        'nome': user.displayName ?? '',
-        'email': user.email ?? '',
-        'entradaEm': FieldValue.serverTimestamp(),
-      });
+            'uid': user.uid,
+            'papel': 'responsavel',
+            'nome': user.displayName ?? '',
+            'email': user.email ?? '',
+            'entradaEm': FieldValue.serverTimestamp(),
+          });
 
       for (final dep in widget.dependentes) {
         await db
@@ -94,11 +95,10 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
             .doc(grupoRef.id)
             .collection('dependentes')
             .add({
-          'nome': dep.nome,
-          'usaApp': dep.usaApp,
-          
-          'criadoEm': FieldValue.serverTimestamp(),
-        });
+              'nome': dep.nome,
+              'usaApp': dep.usaApp,
+              'criadoEm': FieldValue.serverTimestamp(),
+            });
       }
 
       if (!mounted) return;
@@ -129,10 +129,6 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
     );
   }
 
-  void _compartilhar(String codigo) {
-    _copiar(codigo);
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_criando) {
@@ -144,108 +140,118 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
     }
 
     return GradientScreenLayout(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF484848),
-                          width: 1.4,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_rounded,
-                        size: 20,
-                        color: Color(0xFF484848),
-                      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFBDBDBD)),
+                  ),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 16,
+                      color: Color(0xFF484848),
                     ),
                   ),
-                  const Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _ProgressDot(isActive: false),
-                        SizedBox(width: 4),
-                        _ProgressDot(isActive: false),
-                        SizedBox(width: 4),
-                        _ProgressDot(isActive: false),
-                        SizedBox(width: 4),
-                        _ProgressDot(isActive: true),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 34),
-                ],
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Adicione Responsaveis',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
                 ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Compartilhe os códigos abaixo para que outros familiares ou cuidadores possam ingressar no seu grupo.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xFF7E7777),
-                  height: 1.4,
+                const Spacer(),
+                const Row(
+                  children: [
+                    _ProgressDot(isActive: false),
+                    SizedBox(width: 6),
+                    _ProgressDot(isActive: false),
+                    SizedBox(width: 6),
+                    _ProgressDot(isActive: false),
+                    SizedBox(width: 6),
+                    _ProgressDot(isActive: true),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 28),
-              _CodigoCard(
-                titulo: 'Código para responsáveis e cuidadores',
-                codigo: _codigoResponsavel,
-                onCopiar: () => _copiar(_codigoResponsavel),
-                onCompartilhar: () => _compartilhar(_codigoResponsavel),
-              ),
-              if (_temDependenteComApp && _codigoDependente != null) ...[
-                const SizedBox(height: 16),
-                _CodigoCard(
-                  titulo: 'Código para dependentes',
-                  codigo: _codigoDependente!,
-                  onCopiar: () => _copiar(_codigoDependente!),
-                  onCompartilhar: () => _compartilhar(_codigoDependente!),
-                ),
+                const Spacer(),
+                const SizedBox(width: 36),
               ],
-              const SizedBox(height: 14),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  'Seus dados pessoais sao importantes. Compartilhe estes códigos apenas com quem ajudara nos cuidados.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF546E7A),
-                    height: 1.4,
-                  ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Adicione Responsáveis',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: Color.fromARGB(255, 0, 0, 0),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Compartilhe os códigos abaixo para que outros familiares ou cuidadores possam ingressar no seu grupo.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Color(0xFF8A8A8A)),
+            ),
+            const SizedBox(height: 32),
+            _CodigoCard(
+              titulo: 'Código para responsáveis e cuidadores',
+              subtitulo:
+                  'Compartilhe este código com cuidadores e responsáveis.',
+              codigo: _codigoResponsavel,
+              icon: Image.asset(
+                'assets/images/cuidadores-Photoroom.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+              ),
+              color: const Color(0xFF4A94CF),
+              onCompartilhar: () => _copiar(_codigoResponsavel),
+            ),
+            if (_temDependenteComApp && _codigoDependente != null) ...[
+              const SizedBox(height: 20),
+              _CodigoCard(
+                titulo: 'Código para dependente',
+                subtitulo:
+                    'Compartilhe este código com o dependente para que ele também possa acessar o grupo.',
+                codigo: _codigoDependente!,
+                icon: Image.asset(
+                  'assets/images/dependente-Photoroom.png',
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.contain,
                 ),
+                color: const Color(0xFF66BB6A),
+                onCompartilhar: () => _copiar(_codigoDependente!),
               ),
             ],
-          ),
-          Column(
-            children: [
-              GestureDetector(
-                onTap: () {
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F7F9),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE0E0E0)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.lock_outline, size: 20, color: Color(0xFF546E7A)),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Seus dados pessoais são importantes. Compartilhe estes códigos apenas com quem ajudará nos cuidados.',
+                      style: TextStyle(fontSize: 13, color: Color(0xFF546E7A)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            Center(
+              child: TextButton(
+                onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
@@ -256,20 +262,18 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
                 },
                 child: const Text(
                   'Finalizar grupo',
-                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF4195CC),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF4A94CF),
                     decoration: TextDecoration.underline,
-                    decorationColor: Color(0xFF4195CC),
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -277,73 +281,89 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
 
 class _CodigoCard extends StatelessWidget {
   final String titulo;
+  final String subtitulo;
   final String codigo;
-  final VoidCallback onCopiar;
+  final Widget icon;
+  final Color color;
   final VoidCallback onCompartilhar;
 
   const _CodigoCard({
     required this.titulo,
+    required this.subtitulo,
     required this.codigo,
-    required this.onCopiar,
+    required this.icon,
+    required this.color,
     required this.onCompartilhar,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           titulo,
-          textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            color: Color.fromARGB(255, 0, 0, 0),
           ),
         ),
-        const SizedBox(height: 10),
-        GestureDetector(
-          onTap: onCopiar,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(0, 0, 0, 0.05),
-                  blurRadius: 10,
-                  offset: Offset(0, 4),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+          ),
+          child: Column(
+            children: [
+              icon,
+              const SizedBox(height: 16),
+              Text(
+                codigo,
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                  color: color,
                 ),
-              ],
-            ),
-            child: Text(
-              codigo,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 3,
-                color: Colors.black,
               ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: onCompartilhar,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4195CC),
-            foregroundColor: Colors.white,
-            minimumSize: const Size.fromHeight(52),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
-          child: const Text(
-            'Compartilhar código',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  subtitulo,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF757575),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: onCompartilhar,
+                  icon: const Icon(Icons.share_outlined, size: 18),
+                  label: const Text(
+                    'Compartilhar código',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -361,29 +381,16 @@ class _LoadingGrupo extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(
-              width: 60,
-              height: 60,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4195CC)),
-              ),
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4A94CF)),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
             const Text(
               'Criando seu grupo...',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Isso vai levar só um momento',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.black.withValues(alpha: 0.5),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ],
@@ -405,27 +412,16 @@ class _ErroGrupo extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 60, color: Colors.redAccent),
-            const SizedBox(height: 20),
+            const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+            const SizedBox(height: 16),
             Text(
               mensagem,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4195CC),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
               child: const Text('Voltar'),
             ),
           ],
@@ -442,15 +438,12 @@ class _ProgressDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: isActive ? 13 : 11,
-      height: isActive ? 13 : 11,
+    return Container(
+      width: 8,
+      height: 8,
       decoration: BoxDecoration(
-        color: isActive
-            ? const Color.fromARGB(255, 0, 0, 0)
-            : const Color.fromARGB(255, 173, 173, 173),
-        borderRadius: BorderRadius.circular(8),
+        shape: BoxShape.circle,
+        color: isActive ? const Color(0xFF484848) : const Color(0xFFD9D9D9),
       ),
     );
   }
