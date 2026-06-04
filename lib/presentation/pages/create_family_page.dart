@@ -13,12 +13,43 @@ class CreateFamilyPage extends StatefulWidget {
 class _CreateFamilyPageState extends State<CreateFamilyPage> {
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _descricaoController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
     _nomeController.dispose();
     _descricaoController.dispose();
     super.dispose();
+  }
+
+  Future<void> _criarGrupo() async {
+    final nome = _nomeController.text.trim();
+    if (nome.isEmpty) {
+      setState(() => _errorMessage = 'Informe o nome do grupo.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AddDependentsPage(
+            nomeGrupo: nome,
+            descricaoGrupo: _descricaoController.text.trim(),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -101,6 +132,11 @@ class _CreateFamilyPageState extends State<CreateFamilyPage> {
                     child: TextField(
                       controller: _nomeController,
                       style: const TextStyle(fontSize: 16, color: Colors.black),
+                      onChanged: (_) {
+                        if (_errorMessage != null) {
+                          setState(() => _errorMessage = null);
+                        }
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Nome do Grupo',
                         hintStyle: TextStyle(
@@ -147,6 +183,18 @@ class _CreateFamilyPageState extends State<CreateFamilyPage> {
                       ),
                     ),
                   ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 14),
+                    Text(
+                      _errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -154,27 +202,35 @@ class _CreateFamilyPageState extends State<CreateFamilyPage> {
           Column(
             children: [
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AddDependentsPage(),
-                    ),
-                  );
-                },
+                onPressed: _isLoading ? null : _criarGrupo,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4195CC),
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      const Color(0xFF4195CC).withValues(alpha: 0.7),
                   minimumSize: const Size.fromHeight(56),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text(
-                  'Criar grupo',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        'Criar grupo',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
               const SizedBox(height: 32),
             ],

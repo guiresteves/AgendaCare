@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
 
+class DependenteData {
+  final String nome;
+  final bool usaApp;
+  final String? email;
+
+  const DependenteData({
+    required this.nome,
+    required this.usaApp,
+    this.email,
+  });
+}
+
 class NewDependentPage extends StatefulWidget {
   const NewDependentPage({super.key});
 
@@ -13,12 +25,37 @@ class _NewDependentPageState extends State<NewDependentPage> {
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   bool _usaApp = true;
+  String? _errorMessage;
 
   @override
   void dispose() {
     _nomeController.dispose();
     _emailController.dispose();
     super.dispose();
+  }
+
+  void _adicionar() {
+    final nome = _nomeController.text.trim();
+    final email = _emailController.text.trim();
+
+    if (nome.isEmpty) {
+      setState(() => _errorMessage = 'Informe o nome do dependente.');
+      return;
+    }
+
+    if (_usaApp && email.isEmpty) {
+      setState(() => _errorMessage = 'Informe o email para convite.');
+      return;
+    }
+
+    Navigator.pop(
+      context,
+      DependenteData(
+        nome: nome,
+        usaApp: _usaApp,
+        email: _usaApp ? email : null,
+      ),
+    );
   }
 
   @override
@@ -74,6 +111,11 @@ class _NewDependentPageState extends State<NewDependentPage> {
               child: TextField(
                 controller: _nomeController,
                 style: const TextStyle(fontSize: 16, color: Colors.black),
+                onChanged: (_) {
+                  if (_errorMessage != null) {
+                    setState(() => _errorMessage = null);
+                  }
+                },
                 decoration: const InputDecoration(
                   hintText: 'Nome do Dependente',
                   hintStyle: TextStyle(fontSize: 16, color: Colors.black87),
@@ -113,7 +155,12 @@ class _NewDependentPageState extends State<NewDependentPage> {
                         height: 30,
                         child: Switch(
                           value: _usaApp,
-                          onChanged: (val) => setState(() => _usaApp = val),
+                          onChanged: (val) {
+                            setState(() {
+                              _usaApp = val;
+                              _errorMessage = null;
+                            });
+                          },
                           activeTrackColor: const Color(0xFF45C85A),
                           inactiveThumbColor: Colors.white,
                           inactiveTrackColor: Colors.grey,
@@ -135,6 +182,11 @@ class _NewDependentPageState extends State<NewDependentPage> {
                           fontSize: 15,
                           color: Colors.black,
                         ),
+                        onChanged: (_) {
+                          if (_errorMessage != null) {
+                            setState(() => _errorMessage = null);
+                          }
+                        },
                         decoration: const InputDecoration(
                           hintText: 'Email para convite',
                           hintStyle: TextStyle(
@@ -153,6 +205,18 @@ class _NewDependentPageState extends State<NewDependentPage> {
                 ],
               ),
             ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.redAccent,
+                ),
+              ),
+            ],
             const SizedBox(height: 18),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 14),
@@ -172,7 +236,7 @@ class _NewDependentPageState extends State<NewDependentPage> {
               width: double.infinity,
               height: 58,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _adicionar,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4894D0),
                   foregroundColor: Colors.white,

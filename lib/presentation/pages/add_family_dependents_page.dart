@@ -1,22 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../widgets/gradient_screen_layout.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'create_dependent_page.dart';
 import 'share_family_code_page.dart';
 
 class AddDependentsPage extends StatefulWidget {
-  const AddDependentsPage({super.key});
+  final String nomeGrupo;
+  final String descricaoGrupo;
+
+  const AddDependentsPage({
+    super.key,
+    required this.nomeGrupo,
+    required this.descricaoGrupo,
+  });
 
   @override
   State<AddDependentsPage> createState() => _AddDependentsPageState();
 }
 
 class _AddDependentsPageState extends State<AddDependentsPage> {
-  final List<Map<String, dynamic>> _dependentes = [
-    {'nome': 'Guilherme Esteves', 'papel': 'Dependente', 'usaApp': false},
-    {'nome': 'Guilherme Esteves', 'papel': 'Dependente', 'usaApp': false},
-  ];
+  final List<DependenteData> _dependentes = [];
+
+  String _iniciais(String nome) {
+    final partes = nome.trim().split(' ');
+    if (partes.length >= 2) {
+      return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
+    }
+    return nome.substring(0, nome.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
+  Future<void> _abrirFormDependente() async {
+    final resultado = await Navigator.push<DependenteData>(
+      context,
+      MaterialPageRoute(builder: (context) => const NewDependentPage()),
+    );
+
+    if (resultado != null) {
+      setState(() => _dependentes.add(resultado));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,10 +129,10 @@ class _AddDependentsPageState extends State<AddDependentsPage> {
                               shape: BoxShape.circle,
                               color: Color(0xFFE8C2EB),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text(
-                                'GU',
-                                style: TextStyle(
+                                _iniciais(d.nome),
+                                style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF9A2CA0),
@@ -123,7 +146,7 @@ class _AddDependentsPageState extends State<AddDependentsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  d['nome'],
+                                  d.nome,
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w700,
@@ -131,9 +154,9 @@ class _AddDependentsPageState extends State<AddDependentsPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 2),
-                                Text(
-                                  d['papel'],
-                                  style: const TextStyle(
+                                const Text(
+                                  'Dependente',
+                                  style: TextStyle(
                                     fontSize: 14,
                                     color: Color(0xFF8A8A8A),
                                   ),
@@ -166,17 +189,28 @@ class _AddDependentsPageState extends State<AddDependentsPage> {
                               color: Colors.black87,
                             ),
                           ),
-                          SizedBox(
-                            width: 54,
-                            height: 32,
-                            child: Switch(
-                              value: d['usaApp'],
-                              onChanged: (val) {
-                                setState(() => _dependentes[i]['usaApp'] = val);
-                              },
-                              activeTrackColor: const Color(0xFF34C759),
-                              inactiveThumbColor: Colors.white,
-                              inactiveTrackColor: const Color(0xFF9E9E9E),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: d.usaApp
+                                  ? const Color(0xFF34C759).withValues(
+                                      alpha: 0.15)
+                                  : const Color(0xFF9E9E9E).withValues(
+                                      alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              d.usaApp ? 'Sim' : 'Não',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: d.usaApp
+                                    ? const Color(0xFF34C759)
+                                    : const Color(0xFF9E9E9E),
+                              ),
                             ),
                           ),
                         ],
@@ -192,14 +226,7 @@ class _AddDependentsPageState extends State<AddDependentsPage> {
               width: double.infinity,
               height: 54,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NewDependentPage(),
-                    ),
-                  );
-                },
+                onPressed: _abrirFormDependente,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF7F3F3),
                   foregroundColor: Colors.black,
@@ -223,7 +250,11 @@ class _AddDependentsPageState extends State<AddDependentsPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AddPersonsPage(),
+                      builder: (context) => AddPersonsPage(
+                        nomeGrupo: widget.nomeGrupo,
+                        descricaoGrupo: widget.descricaoGrupo,
+                        dependentes: _dependentes,
+                      ),
                     ),
                   );
                 },
