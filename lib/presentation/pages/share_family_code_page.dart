@@ -96,7 +96,7 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
             .add({
           'nome': dep.nome,
           'usaApp': dep.usaApp,
-          if (dep.email != null) 'email': dep.email,
+          
           'criadoEm': FieldValue.serverTimestamp(),
         });
       }
