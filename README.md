@@ -10,15 +10,14 @@ O objetivo do sistema é auxiliar famílias e cuidadores na organização de ati
 
 # 🗂️ Estrutura do Backlog
 
-| Módulo | Descrição | Responsável(s) | Status |
-|---|---|---|---|
+| Módulo | Descrição | Responsável(s) | Status | Link do video no youtube |
+|---|---|---|---| ---|
 | 🛠️ SETUP | Configuração inicial do projeto e arquitetura base | Guilherme | ✅ |
 | 🔐 AUTH | Sistema de autenticação de usuários | Gabriel | ⬜ |
 | 👤 USER/CARE | Perfil e gerenciamento de usuários/Dependentes | Gabriel | ⬜ |
-| 👨‍👩‍👧 GROUP | Gerenciamento de grupos familiares | Kauan | ⬜ |
+| 👨‍👩‍👧 GROUP | Gerenciamento de grupos familiares | Kauan | ✅ | https://youtu.be/tjEu5sHQfOI
 | ✅ TASK | Gestão de tarefas | Guilherme | ⬜ |
 | 🏠 HOME/AGENDA | Dashboard principal | Gustavo | ⬜ |
 | 🔔 NOTIFICATION | Sistema de notificações | Leonidas | ⬜ |
 | 📜 HISTORY | Histórico de atividades | Iago | ⬜ |
-| 
 
