@@ -111,7 +111,8 @@ class _GroupPageState extends State<GroupPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Remover membro'),
         content: const Text(
-            'Tem certeza que deseja remover este membro do grupo?'),
+          'Tem certeza que deseja remover este membro do grupo?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -137,15 +138,14 @@ class _GroupPageState extends State<GroupPage> {
           .doc(uid)
           .delete();
 
-      await db.collection('usuarios').doc(uid).set(
-        {'grupoId': FieldValue.delete()},
-        SetOptions(merge: true),
-      );
+      await db.collection('usuarios').doc(uid).set({
+        'grupoId': FieldValue.delete(),
+      }, SetOptions(merge: true));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro ao remover membro.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Erro ao remover membro.')));
     }
   }
 
@@ -219,9 +219,11 @@ class _GroupPageState extends State<GroupPage> {
               builder: (context, membrosSnap) {
                 final docs = membrosSnap.data?.docs ?? [];
                 final responsaveisDocs = docs
-                    .where((d) =>
-                        (d.data() as Map<String, dynamic>)['papel'] ==
-                        'responsavel')
+                    .where(
+                      (d) =>
+                          (d.data() as Map<String, dynamic>)['papel'] ==
+                          'responsavel',
+                    )
                     .toList();
 
                 return Column(
@@ -247,62 +249,73 @@ class _GroupPageState extends State<GroupPage> {
                             ),
                           ],
                         ),
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: responsaveisDocs.length,
-                          separatorBuilder: (_, __) => const Divider(
-                            height: 1,
-                            indent: 18,
-                            endIndent: 18,
-                            color: Color(0xFFE6E6E6),
-                          ),
-                          itemBuilder: (_, i) {
-                            final data = responsaveisDocs[i].data()
-                                as Map<String, dynamic>;
+                        child: Column(
+                          children: responsaveisDocs.asMap().entries.map((
+                            entry,
+                          ) {
+                            final i = entry.key;
+                            final data =
+                                entry.value.data() as Map<String, dynamic>;
                             final uid = data['uid'] as String? ?? '';
                             final nome = (data['nome'] as String? ?? '').trim();
-                            final nomeExibir =
-                                nome.isNotEmpty ? nome : 'Responsável';
-                            final podRemover =
-                                isCriador && uid != _currentUid;
+                            final nomeExibir = nome.isNotEmpty
+                                ? nome
+                                : 'Responsável';
+                            final podRemover = isCriador && uid != _currentUid;
 
-                            return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 18, vertical: 5),
-                              leading: CircleAvatar(
-                                radius: 20,
-                                backgroundColor: const Color(0xFFF6CDFF),
-                                child: Text(
-                                  _iniciais(nomeExibir),
-                                  style: const TextStyle(
-                                    color: Color(0xFF9E1C8B),
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 14,
+                            return Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 5,
                                   ),
-                                ),
-                              ),
-                              title: Text(
-                                nomeExibir,
-                                style: const TextStyle(
-                                    fontSize: 17, fontWeight: FontWeight.w700),
-                              ),
-                              subtitle: const Text(
-                                'Responsável',
-                                style: TextStyle(
-                                    color: agendaMutedText, fontSize: 13),
-                              ),
-                              trailing: podRemover
-                                  ? IconButton(
-                                      icon: const Icon(
-                                        Icons.remove_circle_outline,
-                                        color: Colors.redAccent,
+                                  leading: CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: const Color(0xFFF6CDFF),
+                                    child: Text(
+                                      _iniciais(nomeExibir),
+                                      style: const TextStyle(
+                                        color: Color(0xFF9E1C8B),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
                                       ),
-                                      onPressed: () => _removerMembro(uid),
-                                    )
-                                  : null,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    nomeExibir,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  subtitle: const Text(
+                                    'Responsável',
+                                    style: TextStyle(
+                                      color: agendaMutedText,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  trailing: podRemover
+                                      ? IconButton(
+                                          icon: const Icon(
+                                            Icons.remove_circle_outline,
+                                            color: Colors.redAccent,
+                                          ),
+                                          onPressed: () => _removerMembro(uid),
+                                        )
+                                      : null,
+                                ),
+                                if (i < responsaveisDocs.length - 1)
+                                  const Divider(
+                                    height: 1,
+                                    indent: 18,
+                                    endIndent: 18,
+                                    color: Color(0xFFE6E6E6),
+                                  ),
+                              ],
                             );
-                          },
+                          }).toList(),
                         ),
                       ),
                   ],
@@ -342,51 +355,61 @@ class _GroupPageState extends State<GroupPage> {
                             ),
                           ],
                         ),
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: docs.length,
-                          separatorBuilder: (_, __) => const Divider(
-                            height: 1,
-                            indent: 18,
-                            endIndent: 18,
-                            color: Color(0xFFE6E6E6),
-                          ),
-                          itemBuilder: (_, i) {
+                        child: Column(
+                          children: docs.asMap().entries.map((entry) {
+                            final i = entry.key;
                             final data =
-                                docs[i].data() as Map<String, dynamic>;
+                                entry.value.data() as Map<String, dynamic>;
                             final nome = (data['nome'] as String? ?? '').trim();
-                            final nomeExibir =
-                                nome.isNotEmpty ? nome : 'Dependente';
+                            final nomeExibir = nome.isNotEmpty
+                                ? nome
+                                : 'Dependente';
 
-                            return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 18, vertical: 5),
-                              leading: CircleAvatar(
-                                radius: 20,
-                                backgroundColor: const Color(0xFF94C4F5),
-                                child: Text(
-                                  _iniciais(nomeExibir),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 14,
+                            return Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 5,
                                   ),
+                                  leading: CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: const Color(0xFF94C4F5),
+                                    child: Text(
+                                      _iniciais(nomeExibir),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    nomeExibir,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  subtitle: const Text(
+                                    'Dependente',
+                                    style: TextStyle(
+                                      color: agendaMutedText,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  trailing: null,
                                 ),
-                              ),
-                              title: Text(
-                                nomeExibir,
-                                style: const TextStyle(
-                                    fontSize: 17, fontWeight: FontWeight.w700),
-                              ),
-                              subtitle: const Text(
-                                'Dependente',
-                                style: TextStyle(
-                                    color: agendaMutedText, fontSize: 13),
-                              ),
-                              trailing: null,
+                                if (i < docs.length - 1)
+                                  const Divider(
+                                    height: 1,
+                                    indent: 18,
+                                    endIndent: 18,
+                                    color: Color(0xFFE6E6E6),
+                                  ),
+                              ],
                             );
-                          },
+                          }).toList(),
                         ),
                       ),
                   ],
@@ -419,11 +442,7 @@ class _EmptyState extends StatelessWidget {
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle({
-    super.key,
-    required this.title,
-    required this.onAdd,
-  });
+  const SectionTitle({super.key, required this.title, required this.onAdd});
 
   final String title;
   final VoidCallback? onAdd;

@@ -95,8 +95,13 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
         if (codigoDependente != null) 'codigoDependente': codigoDependente,
       });
 
+      final nomeUsuario = (user.displayName?.trim().isNotEmpty ?? false)
+          ? user.displayName!.trim()
+          : (user.email ?? '').trim();
+
       await db.collection('usuarios').doc(user.uid).set({
         'grupoId': grupoRef.id,
+        'nome': nomeUsuario,
       }, SetOptions(merge: true));
 
       await db
@@ -107,7 +112,7 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
           .set({
             'uid': user.uid,
             'papel': 'responsavel',
-            'nome': user.displayName ?? '',
+            'nome': nomeUsuario,
             'email': user.email ?? '',
             'criado_por': user.email ?? '',
             'entradaEm': FieldValue.serverTimestamp(),

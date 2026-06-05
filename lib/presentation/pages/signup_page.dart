@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -59,9 +60,22 @@ class _SignupPageState extends State<SignupPage> {
         password: _passwordController.text,
       );
 
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.updateDisplayName(_nameController.text.trim());
+        await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(user.uid)
+            .set({
+              'email': user.email ?? '',
+              'nome': _nameController.text.trim(),
+              'entradaEm': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+      }
+
       if (!mounted) {
         return;
-       }
+      }
 
       Navigator.pushReplacement(
         context,

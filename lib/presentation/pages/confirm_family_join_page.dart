@@ -68,23 +68,28 @@ class _ConfirmFamilyJoinState extends State<ConfirmFamilyJoin> {
 
       final db = FirebaseFirestore.instance;
 
+      final nomeUsuario = (user.displayName?.trim().isNotEmpty ?? false)
+          ? user.displayName!.trim()
+          : (user.email ?? '').trim();
+
       await db
           .collection('grupos')
           .doc(widget.grupoId)
           .collection('membros')
           .doc(user.uid)
           .set({
-        'uid': user.uid,
-        'papel': widget.papel,
-        'nome': user.displayName ?? '',
-        'email': user.email ?? '',
-        'criado_por': user.email ?? '',
-        'entradaEm': FieldValue.serverTimestamp(),
-      });
+            'uid': user.uid,
+            'papel': widget.papel,
+            'nome': nomeUsuario,
+            'email': user.email ?? '',
+            'criado_por': user.email ?? '',
+            'entradaEm': FieldValue.serverTimestamp(),
+          });
 
       await db.collection('usuarios').doc(user.uid).set({
         'grupoId': widget.grupoId,
         'papel': widget.papel,
+        'nome': nomeUsuario,
       }, SetOptions(merge: true));
 
       if (!mounted) return;
@@ -96,7 +101,8 @@ class _ConfirmFamilyJoinState extends State<ConfirmFamilyJoin> {
     } catch (e) {
       if (!mounted) return;
       setState(
-          () => _errorMessage = 'Erro ao entrar no grupo. Tente novamente.');
+        () => _errorMessage = 'Erro ao entrar no grupo. Tente novamente.',
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -114,14 +120,14 @@ class _ConfirmFamilyJoinState extends State<ConfirmFamilyJoin> {
   Widget build(BuildContext context) {
     final nomeGrupo = widget.grupoData['nome'] as String? ?? '';
     final descricao = widget.grupoData['descricao'] as String? ?? '';
-    final letraGrupo =
-        nomeGrupo.isNotEmpty ? nomeGrupo[0].toUpperCase() : 'G';
+    final letraGrupo = nomeGrupo.isNotEmpty ? nomeGrupo[0].toUpperCase() : 'G';
 
     return GradientScreenLayout(
       child: SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height -
+            minHeight:
+                MediaQuery.of(context).size.height -
                 MediaQuery.of(context).padding.top -
                 MediaQuery.of(context).padding.bottom -
                 48,
@@ -354,8 +360,9 @@ class _ConfirmFamilyJoinState extends State<ConfirmFamilyJoin> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4CAF50),
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        const Color(0xFF4CAF50).withValues(alpha: 0.7),
+                    disabledBackgroundColor: const Color(
+                      0xFF4CAF50,
+                    ).withValues(alpha: 0.7),
                     minimumSize: const Size.fromHeight(56),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -368,14 +375,17 @@ class _ConfirmFamilyJoinState extends State<ConfirmFamilyJoin> {
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.4,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text(
                           'Confirmar entrada',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                 ),
                 const SizedBox(height: 12),
