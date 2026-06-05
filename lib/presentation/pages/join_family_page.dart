@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/gradient_screen_layout.dart';
@@ -12,11 +14,102 @@ class JoinFamilyPage extends StatefulWidget {
 
 class _JoinFamilyPageState extends State<JoinFamilyPage> {
   final TextEditingController _codigoController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
     _codigoController.dispose();
     super.dispose();
+  }
+
+  Future<void> _buscarGrupo() async {
+    final codigo = _codigoController.text.trim().toUpperCase();
+
+    if (codigo.isEmpty) {
+      setState(() => _errorMessage = 'Informe o código de acesso.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('Usuário não autenticado.');
+
+      final db = FirebaseFirestore.instance;
+
+      final usuarioDoc = await db.collection('usuarios').doc(user.uid).get();
+      if (usuarioDoc.exists && usuarioDoc.data()?['grupoId'] != null) {
+        if (!mounted) return;
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Você já pertence a um grupo.';
+        });
+        return;
+      }
+
+      QuerySnapshot query = await db
+          .collection('grupos')
+          .where('codigoResponsavel', isEqualTo: codigo)
+          .limit(1)
+          .get();
+
+      String papel = 'responsavel';
+
+      if (query.docs.isEmpty) {
+        query = await db
+            .collection('grupos')
+            .where('codigoDependente', isEqualTo: codigo)
+            .limit(1)
+            .get();
+        papel = 'dependente';
+      }
+
+      if (query.docs.isEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Código inválido. Verifique e tente novamente.';
+        });
+        return;
+      }
+
+      final grupoDoc = query.docs.first;
+      final grupoData = grupoDoc.data() as Map<String, dynamic>;
+
+      final dependentesSnap = await db
+          .collection('grupos')
+          .doc(grupoDoc.id)
+          .collection('dependentes')
+          .get();
+
+      final dependentes = dependentesSnap.docs
+          .map((d) => d.data())
+          .toList();
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ConfirmFamilyJoin(
+            grupoId: grupoDoc.id,
+            grupoData: grupoData,
+            dependentes: dependentes,
+            papel: papel,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _errorMessage = 'Erro ao buscar grupo. Tente novamente.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -107,6 +200,11 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                   controller: _codigoController,
                   textAlign: TextAlign.center,
                   textCapitalization: TextCapitalization.characters,
+                  onChanged: (_) {
+                    if (_errorMessage != null) {
+                      setState(() => _errorMessage = null);
+                    }
+                  },
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
@@ -129,6 +227,18 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
                   ),
                 ),
               ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.redAccent,
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
               Center(
                 child: TextButton(
@@ -152,27 +262,33 @@ class _JoinFamilyPageState extends State<JoinFamilyPage> {
             children: [
               const SizedBox(height: 40),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ConfirmFamilyJoin(),
-                    ),
-                  );
-                },
+                onPressed: _isLoading ? null : _buscarGrupo,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4195CC),
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      const Color(0xFF4195CC).withValues(alpha: 0.7),
                   minimumSize: const Size.fromHeight(56),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text(
-                  'Entrar na Família',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        'Entrar na Família',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600),
+                      ),
               ),
               const SizedBox(height: 32),
             ],
