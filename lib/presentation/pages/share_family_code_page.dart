@@ -13,12 +13,14 @@ class AddPersonsPage extends StatefulWidget {
   final String nomeGrupo;
   final String descricaoGrupo;
   final List<DependenteData> dependentes;
+  final String? grupoIdExistente;
 
   const AddPersonsPage({
     super.key,
     required this.nomeGrupo,
     required this.descricaoGrupo,
     required this.dependentes,
+    this.grupoIdExistente,
   });
 
   @override
@@ -59,6 +61,26 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
 
       final db = FirebaseFirestore.instance;
 
+      if (widget.grupoIdExistente != null) {
+        final grupoDoc = await db
+            .collection('grupos')
+            .doc(widget.grupoIdExistente)
+            .get();
+        final data = grupoDoc.data() ?? {};
+        final codigoResponsavel =
+            data['codigoResponsavel'] as String? ?? _gerarCodigo();
+        final codigoDependente = data['codigoDependente'] as String?;
+
+        if (!mounted) return;
+        setState(() {
+          _criando = false;
+          _codigoResponsavel = codigoResponsavel;
+          _codigoDependente = codigoDependente;
+          _temDependenteComApp = codigoDependente != null;
+        });
+        return;
+      }
+
       final codigoResponsavel = _gerarCodigo();
       final temDependenteComApp = widget.dependentes.any((d) => d.usaApp);
       final codigoDependente = temDependenteComApp ? _gerarCodigo() : null;
@@ -68,6 +90,7 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
         'descricao': widget.descricaoGrupo,
         'criadoEm': FieldValue.serverTimestamp(),
         'criadorId': user.uid,
+        'criado_por': user.email ?? '',
         'codigoResponsavel': codigoResponsavel,
         if (codigoDependente != null) 'codigoDependente': codigoDependente,
       });
@@ -86,6 +109,7 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
             'papel': 'responsavel',
             'nome': user.displayName ?? '',
             'email': user.email ?? '',
+            'criado_por': user.email ?? '',
             'entradaEm': FieldValue.serverTimestamp(),
           });
 
@@ -164,17 +188,18 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
                   ),
                 ),
                 const Spacer(),
-                const Row(
-                  children: [
-                    _ProgressDot(isActive: false),
-                    SizedBox(width: 6),
-                    _ProgressDot(isActive: false),
-                    SizedBox(width: 6),
-                    _ProgressDot(isActive: false),
-                    SizedBox(width: 6),
-                    _ProgressDot(isActive: true),
-                  ],
-                ),
+                if (widget.grupoIdExistente == null)
+                  const Row(
+                    children: [
+                      _ProgressDot(isActive: false),
+                      SizedBox(width: 6),
+                      _ProgressDot(isActive: false),
+                      SizedBox(width: 6),
+                      _ProgressDot(isActive: false),
+                      SizedBox(width: 6),
+                      _ProgressDot(isActive: true),
+                    ],
+                  ),
                 const Spacer(),
                 const SizedBox(width: 36),
               ],
@@ -260,9 +285,11 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
                     (route) => false,
                   );
                 },
-                child: const Text(
-                  'Finalizar grupo',
-                  style: TextStyle(
+                child: Text(
+                  widget.grupoIdExistente != null
+                      ? 'Voltar ao grupo'
+                      : 'Finalizar grupo',
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF4A94CF),

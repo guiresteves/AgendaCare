@@ -1,90 +1,432 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/agenda_scaffold.dart';
+import 'share_family_code_page.dart';
+import 'create_dependent_page.dart';
 
-class GroupPage extends StatelessWidget {
+class GroupPage extends StatefulWidget {
   const GroupPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const responsaveis = [
-      Person(
-        name: 'Gabriel Augusto',
-        role: 'Responsável',
-        initials: 'GA',
-        avatarColor: Color(0xFFF6CDFF),
-        textColor: Color(0xFF9E1C8B),
-      ),
-      Person(
-        name: 'Kauan Gabriel',
-        role: 'Responsável',
-        initials: 'KA',
-        avatarColor: Color(0xFFF6CDFF),
-        textColor: Color(0xFF9E1C8B),
-      ),
-      Person(
-        name: 'Leonidas Moreira',
-        role: 'Responsável',
-        initials: 'LM',
-        avatarColor: agendaBlue,
-        textColor: Colors.white,
-      ),
-    ];
+  State<GroupPage> createState() => _GroupPageState();
+}
 
-    const dependentes = [
-      Person(
-        name: 'Iago Messias',
-        role: 'Dependente',
-        initials: 'IM',
-        avatarColor: Color(0xFF94C4F5),
-        textColor: Colors.white,
+class _GroupPageState extends State<GroupPage> {
+  String? _grupoId;
+  String? _criadorId;
+  bool _carregando = true;
+  String? _erro;
+  String _currentUid = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarGrupoId();
+  }
+
+  Future<void> _carregarGrupoId() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          _carregando = false;
+          _erro = 'Usuário não autenticado.';
+        });
+        return;
+      }
+
+      _currentUid = user.uid;
+
+      final usuarioDoc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(user.uid)
+          .get();
+
+      final grupoId = usuarioDoc.data()?['grupoId'] as String?;
+
+      if (!mounted) return;
+
+      if (grupoId == null) {
+        setState(() {
+          _carregando = false;
+        });
+        return;
+      }
+
+      final grupoDoc = await FirebaseFirestore.instance
+          .collection('grupos')
+          .doc(grupoId)
+          .get();
+
+      if (!mounted) return;
+
+      setState(() {
+        _grupoId = grupoId;
+        _criadorId = grupoDoc.data()?['criadorId'] as String?;
+        _carregando = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _carregando = false;
+        _erro = 'Erro ao carregar grupo.';
+      });
+    }
+  }
+
+  String _iniciais(String nome) {
+    final trimmed = nome.trim();
+    if (trimmed.isEmpty) return '?';
+    final partes = trimmed.split(' ');
+    if (partes.length >= 2 && partes[1].isNotEmpty) {
+      return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
+    }
+    return trimmed.substring(0, trimmed.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
+  Future<String> _resolverNome(Map<String, dynamic> dados) async {
+    final nome = (dados['nome'] as String? ?? '').trim();
+    if (nome.isNotEmpty) return nome;
+
+    final uid = dados['uid'] as String?;
+    if (uid == null) return '';
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(uid)
+          .get();
+      return (doc.data()?['nome'] as String? ?? '').trim();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Future<void> _removerMembro(String uid) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Remover membro'),
+        content: const Text(
+            'Tem certeza que deseja remover este membro do grupo?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            child: const Text('Remover'),
+          ),
+        ],
       ),
-      Person(
-        name: 'Gustavo Menezes',
-        role: 'Dependente',
-        initials: 'GM',
-        avatarColor: Color(0xFF94C4F5),
-        textColor: Colors.white,
+    );
+
+    if (confirmar != true || _grupoId == null) return;
+
+    try {
+      final db = FirebaseFirestore.instance;
+      await db
+          .collection('grupos')
+          .doc(_grupoId)
+          .collection('membros')
+          .doc(uid)
+          .delete();
+
+      await db.collection('usuarios').doc(uid).set(
+        {'grupoId': FieldValue.delete()},
+        SetOptions(merge: true),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao remover membro.')),
+      );
+    }
+  }
+
+  void _irParaCodigos() {
+    if (_grupoId == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddPersonsPage(
+          nomeGrupo: '',
+          descricaoGrupo: '',
+          dependentes: const [],
+          grupoIdExistente: _grupoId,
+        ),
       ),
-    ];
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_carregando) {
+      return const AgendaScaffold(
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4195CC)),
+          ),
+        ),
+      );
+    }
+
+    if (_erro != null || _grupoId == null) {
+      return AgendaScaffold(
+        child: Center(
+          child: Text(
+            _erro ?? 'Você não pertence a nenhum grupo.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 15, color: Color(0xFF7E7777)),
+          ),
+        ),
+      );
+    }
+
+    final isCriador = _currentUid == _criadorId;
 
     return AgendaScaffold(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Grupo',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 5),
-          const Text(
-            'Veja e organize quem cuida, e quem é cuidado no seu grupo\nfamiliar',
-            style: TextStyle(
-              color: agendaMutedText,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              height: 1.25,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Grupo',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
             ),
-          ),
-          const SizedBox(height: 32),
-          SectionTitle(title: 'Responsáveis', onAdd: () {}),
-          const SizedBox(height: 13),
-          PersonCard(people: responsaveis),
-          const SizedBox(height: 28),
-          SectionTitle(title: 'Dependentes', onAdd: () {}),
-          const SizedBox(height: 13),
-          PersonCard(people: dependentes),
-        ],
+            const SizedBox(height: 5),
+            const Text(
+              'Veja e organize quem cuida, e quem é cuidado no seu grupo\nfamiliar',
+              style: TextStyle(
+                color: agendaMutedText,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                height: 1.25,
+              ),
+            ),
+            const SizedBox(height: 32),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('grupos')
+                  .doc(_grupoId)
+                  .collection('membros')
+                  .snapshots(),
+              builder: (context, membrosSnap) {
+                final docs = membrosSnap.data?.docs ?? [];
+                final responsaveisDocs = docs
+                    .where((d) =>
+                        (d.data() as Map<String, dynamic>)['papel'] ==
+                        'responsavel')
+                    .toList();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SectionTitle(
+                      title: 'Responsáveis',
+                      onAdd: isCriador ? _irParaCodigos : null,
+                    ),
+                    const SizedBox(height: 13),
+                    if (responsaveisDocs.isEmpty)
+                      const _EmptyState(mensagem: 'Nenhum responsável ainda.'),
+                    if (responsaveisDocs.isNotEmpty)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x24000000),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: responsaveisDocs.length,
+                          separatorBuilder: (_, __) => const Divider(
+                            height: 1,
+                            indent: 18,
+                            endIndent: 18,
+                            color: Color(0xFFE6E6E6),
+                          ),
+                          itemBuilder: (_, i) {
+                            final data = responsaveisDocs[i].data()
+                                as Map<String, dynamic>;
+                            final uid = data['uid'] as String? ?? '';
+                            final nome = (data['nome'] as String? ?? '').trim();
+                            final nomeExibir =
+                                nome.isNotEmpty ? nome : 'Responsável';
+                            final podRemover =
+                                isCriador && uid != _currentUid;
+
+                            return ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 5),
+                              leading: CircleAvatar(
+                                radius: 20,
+                                backgroundColor: const Color(0xFFF6CDFF),
+                                child: Text(
+                                  _iniciais(nomeExibir),
+                                  style: const TextStyle(
+                                    color: Color(0xFF9E1C8B),
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                nomeExibir,
+                                style: const TextStyle(
+                                    fontSize: 17, fontWeight: FontWeight.w700),
+                              ),
+                              subtitle: const Text(
+                                'Responsável',
+                                style: TextStyle(
+                                    color: agendaMutedText, fontSize: 13),
+                              ),
+                              trailing: podRemover
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.remove_circle_outline,
+                                        color: Colors.redAccent,
+                                      ),
+                                      onPressed: () => _removerMembro(uid),
+                                    )
+                                  : null,
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 28),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('grupos')
+                  .doc(_grupoId)
+                  .collection('dependentes')
+                  .snapshots(),
+              builder: (context, dependentesSnap) {
+                final docs = dependentesSnap.data?.docs ?? [];
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SectionTitle(
+                      title: 'Dependentes',
+                      onAdd: isCriador ? _irParaCodigos : null,
+                    ),
+                    const SizedBox(height: 13),
+                    if (docs.isEmpty)
+                      const _EmptyState(mensagem: 'Nenhum dependente ainda.'),
+                    if (docs.isNotEmpty)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x24000000),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: docs.length,
+                          separatorBuilder: (_, __) => const Divider(
+                            height: 1,
+                            indent: 18,
+                            endIndent: 18,
+                            color: Color(0xFFE6E6E6),
+                          ),
+                          itemBuilder: (_, i) {
+                            final data =
+                                docs[i].data() as Map<String, dynamic>;
+                            final nome = (data['nome'] as String? ?? '').trim();
+                            final nomeExibir =
+                                nome.isNotEmpty ? nome : 'Dependente';
+
+                            return ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 5),
+                              leading: CircleAvatar(
+                                radius: 20,
+                                backgroundColor: const Color(0xFF94C4F5),
+                                child: Text(
+                                  _iniciais(nomeExibir),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                nomeExibir,
+                                style: const TextStyle(
+                                    fontSize: 17, fontWeight: FontWeight.w700),
+                              ),
+                              subtitle: const Text(
+                                'Dependente',
+                                style: TextStyle(
+                                    color: agendaMutedText, fontSize: 13),
+                              ),
+                              trailing: null,
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final String mensagem;
+
+  const _EmptyState({required this.mensagem});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Text(
+        mensagem,
+        style: const TextStyle(fontSize: 14, color: agendaMutedText),
       ),
     );
   }
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle({super.key, required this.title, required this.onAdd});
+  const SectionTitle({
+    super.key,
+    required this.title,
+    required this.onAdd,
+  });
 
   final String title;
-  final VoidCallback onAdd;
+  final VoidCallback? onAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -99,111 +441,25 @@ class SectionTitle extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        SizedBox(
-          height: 30,
-          child: FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: agendaBlue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(26),
+        if (onAdd != null)
+          SizedBox(
+            height: 30,
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: agendaBlue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(26),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-            ),
-            onPressed: onAdd,
-            child: const Text(
-              'Adicionar',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              onPressed: onAdd,
+              child: const Text(
+                'Adicionar',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
             ),
           ),
-        ),
       ],
     );
   }
-}
-
-class PersonCard extends StatelessWidget {
-  const PersonCard({super.key, required this.people});
-
-  final List<Person> people;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x24000000),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          for (int i = 0; i < people.length; i++) ...[
-            PersonTile(person: people[i]),
-            if (i != people.length - 1)
-              const Divider(
-                height: 1,
-                indent: 18,
-                endIndent: 18,
-                color: Color(0xFFE6E6E6),
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class PersonTile extends StatelessWidget {
-  const PersonTile({super.key, required this.person});
-
-  final Person person;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
-      leading: CircleAvatar(
-        radius: 20,
-        backgroundColor: person.avatarColor,
-        child: Text(
-          person.initials,
-          style: TextStyle(
-            color: person.textColor,
-            fontWeight: FontWeight.w900,
-            fontSize: 14,
-          ),
-        ),
-      ),
-      title: Text(
-        person.name,
-        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-      ),
-      subtitle: Text(
-        person.role,
-        style: const TextStyle(color: agendaMutedText, fontSize: 13),
-      ),
-      trailing: const Icon(Icons.chevron_right, color: Color(0xFF7E7777)),
-    );
-  }
-}
-
-class Person {
-  const Person({
-    required this.name,
-    required this.role,
-    required this.initials,
-    required this.avatarColor,
-    required this.textColor,
-  });
-
-  final String name;
-  final String role;
-  final String initials;
-  final Color avatarColor;
-  final Color textColor;
 }
