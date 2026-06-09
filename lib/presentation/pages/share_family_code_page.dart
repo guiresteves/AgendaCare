@@ -5,8 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/auth/auth_gate.dart';
 import '../widgets/gradient_screen_layout.dart';
-import './content_page/content_page.dart';
 import 'create_dependent_page.dart';
 
 class AddPersonsPage extends StatefulWidget {
@@ -84,16 +84,20 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
       final codigoResponsavel = _gerarCodigo();
       final temDependenteComApp = widget.dependentes.any((d) => d.usaApp);
       final codigoDependente = temDependenteComApp ? _gerarCodigo() : null;
-
-      final grupoRef = await db.collection('grupos').add({
+      final grupoData = <String, Object?>{
         'nome': widget.nomeGrupo,
         'descricao': widget.descricaoGrupo,
         'criadoEm': FieldValue.serverTimestamp(),
         'criadorId': user.uid,
         'criado_por': user.email ?? '',
         'codigoResponsavel': codigoResponsavel,
-        if (codigoDependente != null) 'codigoDependente': codigoDependente,
-      });
+      };
+
+      if (codigoDependente != null) {
+        grupoData['codigoDependente'] = codigoDependente;
+      }
+
+      final grupoRef = await db.collection('grupos').add(grupoData);
 
       final nomeUsuario = (user.displayName?.trim().isNotEmpty ?? false)
           ? user.displayName!.trim()
@@ -123,10 +127,7 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
             .collection('grupos')
             .doc(grupoRef.id)
             .collection('dependentes')
-            .add({
-              'nome': dep.nome,
-              'usaApp': dep.usaApp,
-            });
+            .add({'nome': dep.nome, 'usaApp': dep.usaApp});
       }
 
       if (!mounted) return;
@@ -283,9 +284,7 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const ContentPage(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const AuthGate()),
                     (route) => false,
                   );
                 },

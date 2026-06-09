@@ -36,9 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    setState(() {
-      _isSigningOut = false;
-    });
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   String _profileSubtitle(EditableProfileDetails profile) {
