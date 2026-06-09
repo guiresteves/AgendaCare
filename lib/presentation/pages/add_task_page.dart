@@ -26,7 +26,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
   String? _errorMessage;
   bool _isSaving = false;
 
-  // Listas carregadas do Firestore via stream
   List<PersonModel> _responsaveis = [];
   List<PersonModel> _dependentes = [];
 
@@ -288,7 +287,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       ),
                       const SizedBox(height: 20),
 
-                      // ── Responsáveis do Firestore ───────────────────────
+                      // Responsáveis 
                       if (_responsaveis.isNotEmpty)
                         _PeopleCard(
                           title: 'Responsáveis',
@@ -301,7 +300,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       if (_responsaveis.isNotEmpty)
                         const SizedBox(height: 14),
 
-                      // ── Dependentes do Firestore ────────────────────────
+                      // Dependentes
                       if (_dependentes.isNotEmpty)
                         _PeopleCard(
                           title: 'Dependentes',
@@ -363,8 +362,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
     );
   }
 }
-
-// ── Widgets internos ──────────────────────────────────────────────────────────
 
 class _TaskHeader extends StatelessWidget {
   const _TaskHeader();

@@ -9,8 +9,6 @@ class TaskProvider extends ChangeNotifier {
   final _db = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
 
-  // ── Busca o grupoId do usuário logado ─────────────────────────────────────
-
   Future<String?> _getGrupoId() async {
     final user = _auth.currentUser;
     if (user == null) return null;
@@ -23,8 +21,6 @@ class TaskProvider extends ChangeNotifier {
     if (grupoId == null || grupoId.isEmpty) return null;
     return _db.collection('grupos').doc(grupoId).collection('tarefas');
   }
-
-  // ── Stream de tarefas ─────────────────────────────────────────────────────
 
   Stream<List<TaskModel>> tasksStream() async* {
     final grupoId = await _getGrupoId();
@@ -43,8 +39,6 @@ class TaskProvider extends ChangeNotifier {
             .toList());
   }
 
-  // ── Stream de responsáveis ────────────────────────────────────────────────
-
   Stream<List<PersonModel>> responsaveisStream() async* {
     final grupoId = await _getGrupoId();
     if (grupoId == null || grupoId.isEmpty) {
@@ -61,8 +55,6 @@ class TaskProvider extends ChangeNotifier {
             .toList());
   }
 
-  // ── Stream de dependentes ─────────────────────────────────────────────────
-
   Stream<List<PersonModel>> dependentesStream() async* {
     final grupoId = await _getGrupoId();
     if (grupoId == null || grupoId.isEmpty) {
@@ -78,8 +70,6 @@ class TaskProvider extends ChangeNotifier {
             .map((doc) => PersonModel.fromDependentMap(doc.id, doc.data()))
             .toList());
   }
-
-  // ── CRUD de tarefas ───────────────────────────────────────────────────────
 
   Future<void> addTask(TaskModel task) async {
     try {

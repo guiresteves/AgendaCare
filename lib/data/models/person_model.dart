@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Representa uma pessoa do grupo — responsável ou dependente.
-/// Vem do Firestore, não mais de dados mockados.
 class PersonModel {
   const PersonModel({
     required this.id,
@@ -17,7 +15,6 @@ class PersonModel {
   final String initials;
   final Color avatarColor;
 
-  // ── Vem de grupos/{grupoId}/membros/{uid} ─────────────────────────────────
   factory PersonModel.fromMemberMap(String id, Map<String, dynamic> map) {
     final name = map['nome'] as String? ?? '';
     return PersonModel(
@@ -29,7 +26,7 @@ class PersonModel {
     );
   }
 
-  // ── Vem de grupos/{grupoId}/dependentes/{id} ──────────────────────────────
+
   factory PersonModel.fromDependentMap(String id, Map<String, dynamic> map) {
     final name = map['nome'] as String? ?? '';
     return PersonModel(

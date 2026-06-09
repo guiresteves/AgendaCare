@@ -22,14 +22,14 @@ class TaskModel {
   final List<String> dependentIds;
   final bool isConfirmed;
 
-  // ── Converte para Map — usado ao salvar no Firestore ──────────────────────
+  // ── Converte para Map 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
       'description': description,
-      // Salva a data como Timestamp do Firestore
+      // Salva a data como Timestamp
       'date': Timestamp.fromDate(date),
-      // Salva hora e minuto separados (TimeOfDay não existe no Firestore)
+      // Salva hora e minuto separados
       'timeHour': time.hour,
       'timeMinute': time.minute,
       'responsibleIds': responsibleIds,
@@ -38,7 +38,7 @@ class TaskModel {
     };
   }
 
-  // ── Converte de Map — usado ao ler do Firestore ───────────────────────────
+  // ── Converte de Map — usado ao ler do Firestore 
   factory TaskModel.fromMap(String id, Map<String, dynamic> map) {
     // Lê a data como Timestamp e converte para DateTime
     final timestamp = map['date'] as Timestamp?;
@@ -59,7 +59,7 @@ class TaskModel {
     );
   }
 
-  // ── Cria uma cópia com campos alterados ───────────────────────────────────
+  // ── Cria uma cópia com campos alterados 
   TaskModel copyWith({
     String? title,
     String? description,
@@ -81,7 +81,7 @@ class TaskModel {
     );
   }
 
-  // ── Formatações ───────────────────────────────────────────────────────────
+  // ── Formatações 
   String get formattedDate {
     final d = date.day.toString().padLeft(2, '0');
     final m = date.month.toString().padLeft(2, '0');
