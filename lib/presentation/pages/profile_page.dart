@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../core/auth/auth_service.dart';
 import 'change_password_page.dart';
 import 'edit_profile_page.dart';
+import 'terms_privacy_page.dart';
 
 const _primaryBlue = Color(0xFF4A97CF);
 const _textDark = Colors.black;
@@ -256,8 +257,16 @@ class ProfilePage extends StatelessWidget {
                           child: Column(
                             children: [
                               _MenuTile(
-                                label: 'Politica de Privacidade',
-                                onTap: () {},
+                                label: 'Termos e Privacidade',
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const TermsPrivacyPage(),
+                                    ),
+                                  );
+                                },
                                 isFirst: true,
                                 isLast: false,
                               ),

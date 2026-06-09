@@ -8,6 +8,7 @@ import '../../core/auth/auth_service.dart';
 import '../widgets/gradient_screen_layout.dart';
 import 'family_setup_page.dart';
 import 'login_page.dart';
+import 'terms_privacy_page.dart';
 
 const _buttonColor = Color(0xFF4A97CF);
 const _mutedTextColor = Color(0xFF7E7777);
@@ -112,6 +113,13 @@ class _SignupPageState extends State<SignupPage> {
   Future<void> _submitWithGoogle() async {
     FocusScope.of(context).unfocus();
 
+    if (!_acceptedTerms) {
+      setState(() {
+        _errorMessage = 'Voce precisa aceitar os termos para continuar.';
+      });
+      return;
+    }
+
     setState(() {
       _isGoogleLoading = true;
       _errorMessage = null;
@@ -199,6 +207,13 @@ class _SignupPageState extends State<SignupPage> {
     }
 
     return null;
+  }
+
+  void _openTermsPrivacy() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TermsPrivacyPage()),
+    );
   }
 
   String? _validateName(String? value) {
@@ -376,25 +391,51 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(
+                  Expanded(
                     child: Text.rich(
                       TextSpan(
                         text: 'Ao criar uma conta, voce concorda com nossos ',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.black,
                           height: 1.35,
                         ),
                         children: [
-                          TextSpan(
-                            text: 'Termos de Uso',
-                            style: TextStyle(fontWeight: FontWeight.w600),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.baseline,
+                            baseline: TextBaseline.alphabetic,
+                            child: InkWell(
+                              onTap: _openTermsPrivacy,
+                              child: const Text(
+                                'Termos de Uso',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: _buttonColor,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: _buttonColor,
+                                ),
+                              ),
+                            ),
                           ),
-                          TextSpan(text: ' e '),
-                          TextSpan(
-                            text: 'Politica de Privacidade',
-                            style: TextStyle(fontWeight: FontWeight.w600),
+                          const TextSpan(text: ' e '),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.baseline,
+                            baseline: TextBaseline.alphabetic,
+                            child: InkWell(
+                              onTap: _openTermsPrivacy,
+                              child: const Text(
+                                'Politica de Privacidade',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: _buttonColor,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: _buttonColor,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
