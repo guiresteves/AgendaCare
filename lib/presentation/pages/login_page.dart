@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../core/auth/auth_service.dart';
 import '../widgets/gradient_screen_layout.dart';
+import 'forgot_password_page.dart';
 import 'signup_page.dart';
 
 const _buttonColor = Color(0xFF4195CC);
@@ -21,6 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   String? _errorMessage;
 
   @override
@@ -43,16 +47,24 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-       await FirebaseAuth.instance.signInWithEmailAndPassword(
-         email: _emailController.text.trim(),
-         password: _passwordController.text.trim(),
-       );
+      await AuthService.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
       if (!mounted) {
         return;
-        }
+      }
 
       Navigator.pop(context);
+    } on InstitutionalDomainAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+      });
     } on FirebaseAuthException catch (error) {
       if (!mounted) {
         return;
@@ -70,10 +82,77 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _entrarComGoogle() async {
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _isGoogleLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await AuthService.instance.signInWithGoogle();
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.pop(context);
+    } on InstitutionalDomainAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+      });
+    } on GoogleSignInException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      if (error.code == GoogleSignInExceptionCode.canceled ||
+          error.code == GoogleSignInExceptionCode.interrupted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage =
+            error.description ?? 'Nao foi possivel entrar com Google.';
+      });
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message ?? 'Nao foi possivel entrar com Google.';
+      });
+    } on UnsupportedError catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message ?? 'Google Sign-In indisponivel.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
   String? _validarEmail(String? value) {
     final email = value?.trim() ?? '';
     if (email.isEmpty) {
       return 'Informe seu email.';
+    }
+
+    if (!AuthService.isInstitutionalEmail(email)) {
+      return 'Use seu email institucional @souunit.com.br.';
     }
 
     return null;
@@ -206,6 +285,32 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _isLoading || _isGoogleLoading
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordPage(),
+                        ),
+                      );
+                    },
+              child: const Text(
+                'Esqueci minha senha',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _buttonColor,
+                  decoration: TextDecoration.underline,
+                  decorationColor: _buttonColor,
+                ),
+              ),
+            ),
+          ),
           if (_errorMessage != null) ...[
             const SizedBox(height: 16),
             Text(
@@ -243,6 +348,48 @@ class _LoginPageState extends State<LoginPage> {
                 : const Text(
                     'Entrar',
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                  ),
+          ),
+          const SizedBox(height: 14),
+          OutlinedButton(
+            onPressed: _isGoogleLoading ? null : _entrarComGoogle,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.black,
+              backgroundColor: Colors.white,
+              side: const BorderSide(color: Color(0xFFE1E7EC)),
+              minimumSize: const Size.fromHeight(52),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+            ),
+            child: _isGoogleLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor: AlwaysStoppedAnimation<Color>(_buttonColor),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/google.svg',
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Entrar com Google',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
           ),
           const SizedBox(height: 18),
