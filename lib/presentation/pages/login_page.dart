@@ -344,20 +344,18 @@ class _LoginPageState extends State<LoginPage> {
                       valueColor: AlwaysStoppedAnimation<Color>(_buttonColor),
                     ),
                   )
-                : const Row(
+                : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'G',
-                        style: TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                          color: _buttonColor,
-                        ),
+                      SvgPicture.asset(
+                        'assets/icons/google.svg',
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.contain,
                       ),
-                      SizedBox(width: 12),
-                      Text(
+                      const SizedBox(width: 12),
+                      const Text(
                         'Entrar com Google',
                         style: TextStyle(
                           fontSize: 16,

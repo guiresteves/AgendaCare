@@ -473,20 +473,18 @@ class _SignupPageState extends State<SignupPage> {
                           ),
                         ),
                       )
-                    : const Row(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            'G',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: _buttonColor,
-                            ),
+                          SvgPicture.asset(
+                            'assets/icons/google.svg',
+                            width: 21,
+                            height: 21,
+                            fit: BoxFit.contain,
                           ),
-                          SizedBox(width: 12),
-                          Text(
+                          const SizedBox(width: 12),
+                          const Text(
                             'Criar conta com Google',
                             style: TextStyle(
                               fontSize: 17,
