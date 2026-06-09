@@ -12,7 +12,20 @@
           "package_name": "com.example.agendacare"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "47118712381-tffffosgj0njo0il6eluu2iv1i4ong6p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.agendacare",
+            "certificate_hash": "09afefc66501f379eabc1d2f3044f6095a6d15de"
+          }
+        },
+        {
+          "client_id": "47118712381-0bameuglpf80n346dca5ndv50apddu19.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBOPHseHc3_d4Q1MN3H0FViLRGl9J5NpvM"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "47118712381-0bameuglpf80n346dca5ndv50apddu19.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "47118712381-sn2u05gr2kksfi65077f7e81bc1lh4g3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.agendacare"
+              }
+            }
+          ]
         }
       }
     }

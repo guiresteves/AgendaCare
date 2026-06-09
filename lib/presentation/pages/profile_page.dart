@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/auth/auth_service.dart';
 import 'change_password_page.dart';
 import 'edit_profile_page.dart';
 
@@ -12,7 +13,7 @@ class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   Future<void> _desconectar() async {
-    await FirebaseAuth.instance.signOut();
+    await AuthService.instance.signOut();
   }
 
   @override

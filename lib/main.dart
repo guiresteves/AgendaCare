@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'core/auth/auth_service.dart';
 import 'firebase_options.dart';
 import 'presentation/pages/content_page/content_page.dart';
 import 'presentation/pages/welcome_page.dart';
@@ -39,6 +40,25 @@ class AuthGate extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
+          final user = snapshot.data!;
+          if (!AuthService.isInstitutionalEmail(user.email)) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              AuthService.instance.signOut();
+            });
+
+            return const Scaffold(
+              body: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Acesso permitido apenas para contas @souunit.com.br.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            );
+          }
+
           return const ContentPage();
         }
 

@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../core/auth/auth_service.dart';
 import '../widgets/gradient_screen_layout.dart';
 import 'family_setup_page.dart';
 import 'login_page.dart';
@@ -25,6 +27,7 @@ class _SignupPageState extends State<SignupPage> {
 
   bool _acceptedTerms = false;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   String? _errorMessage;
 
   @override
@@ -55,7 +58,7 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      await AuthService.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
@@ -81,6 +84,14 @@ class _SignupPageState extends State<SignupPage> {
         context,
         MaterialPageRoute(builder: (context) => const FamilySetupPage()),
       );
+    } on InstitutionalDomainAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+      });
     } on FirebaseAuthException catch (error) {
       if (!mounted) {
         return;
@@ -98,10 +109,93 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
+  Future<void> _submitWithGoogle() async {
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _isGoogleLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final credential = await AuthService.instance.signInWithGoogle();
+      final user = credential.user;
+
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(user.uid)
+            .set({
+              'email': user.email ?? '',
+              'nome': user.displayName ?? '',
+              'entradaEm': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const FamilySetupPage()),
+      );
+    } on InstitutionalDomainAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+      });
+    } on GoogleSignInException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      if (error.code == GoogleSignInExceptionCode.canceled ||
+          error.code == GoogleSignInExceptionCode.interrupted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage =
+            error.description ?? 'Nao foi possivel criar conta com Google.';
+      });
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage =
+            error.message ?? 'Nao foi possivel criar conta com Google.';
+      });
+    } on UnsupportedError catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message ?? 'Google Sign-In indisponivel.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
   String? _validateEmail(String? value) {
     final email = value?.trim() ?? '';
     if (email.isEmpty) {
       return 'Informe seu email.';
+    }
+
+    if (!AuthService.isInstitutionalEmail(email)) {
+      return 'Use seu email institucional @souunit.com.br.';
     }
 
     return null;
@@ -354,6 +448,52 @@ class _SignupPageState extends State<SignupPage> {
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
+                      ),
+              ),
+              const SizedBox(height: 14),
+              OutlinedButton(
+                onPressed: _isGoogleLoading ? null : _submitWithGoogle,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFFE1E7EC)),
+                  minimumSize: const Size.fromHeight(62),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(36),
+                  ),
+                ),
+                child: _isGoogleLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _buttonColor,
+                          ),
+                        ),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'G',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: _buttonColor,
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Criar conta com Google',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
               ),
               const SizedBox(height: 22),
