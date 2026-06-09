@@ -75,7 +75,21 @@ class TaskProvider extends ChangeNotifier {
     try {
       final ref = await _tasksRef();
       if (ref == null) return;
-      await ref.add(task.toMap());
+
+      final user = _auth.currentUser;
+      String? creatorName;
+
+      if (user != null) {
+        final userDoc = await _db.collection('usuarios').doc(user.uid).get();
+        creatorName = userDoc.data()?['nome'] as String?;
+      }
+
+      final taskWithCreator = task.copyWith(
+        createdById: user?.uid,
+        createdByName: creatorName,
+      );
+
+      await ref.add(taskWithCreator.toMap());
     } catch (e) {
       debugPrint('Erro ao adicionar tarefa: $e');
     }
@@ -105,7 +119,38 @@ class TaskProvider extends ChangeNotifier {
     try {
       final ref = await _tasksRef();
       if (ref == null) return;
-      await ref.doc(id).update({'isConfirmed': !currentValue});
+
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      // Busca a tarefa para validar responsável
+      final doc = await ref.doc(id).get();
+      final task = TaskModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+      if (!task.responsibleIds.contains(user.uid)) {
+        debugPrint('Usuário não é responsável por esta tarefa.');
+        return;
+      }
+
+      if (currentValue) {
+        // Desmarcando — limpa os dados de confirmação
+        await ref.doc(id).update({
+          'isConfirmed': false,
+          'confirmedById': FieldValue.delete(),
+          'confirmedByName': FieldValue.delete(),
+          'confirmedAt': FieldValue.delete(),
+        });
+      } else {
+        // Confirmando — grava auditoria
+        final userDoc = await _db.collection('usuarios').doc(user.uid).get();
+        final confirmerName = userDoc.data()?['nome'] as String?;
+
+        await ref.doc(id).update({
+          'isConfirmed': true,
+          'confirmedById': user.uid,
+          'confirmedByName': confirmerName,
+          'confirmedAt': Timestamp.fromDate(DateTime.now()),
+        });
+      }
     } catch (e) {
       debugPrint('Erro ao confirmar tarefa: $e');
     }
