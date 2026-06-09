@@ -2,10 +2,10 @@ import 'package:agendacare/presentation/pages/group_page.dart';
 import 'package:agendacare/presentation/pages/history_page.dart';
 import 'package:agendacare/presentation/pages/home_page.dart';
 import 'package:agendacare/presentation/pages/profile_page.dart';
-import 'package:agendacare/presentation/pages/task_page.dart';
+import 'package:agendacare/presentation/pages/add_task_page.dart';
 import 'package:flutter/material.dart';
 
-import '../../widgets/agenda_scaffold.dart';
+import '../../../core/theme/app_colors.dart';
 
 class ContentPage extends StatefulWidget {
   const ContentPage({super.key});
@@ -76,7 +76,7 @@ class _ContentPageState extends State<ContentPage> {
         width: 86,
         height: 86,
         child: FloatingActionButton(
-          backgroundColor: agendaBlue,
+          backgroundColor: AppColors.primaryBlue,
           elevation: _currentIndex == _taskIndex ? 6 : 2,
           shape: const CircleBorder(),
           onPressed: () => _goToPage(_taskIndex),
