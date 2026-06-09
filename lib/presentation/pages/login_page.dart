@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../core/auth/auth_service.dart';
 import '../widgets/gradient_screen_layout.dart';
+import 'forgot_password_page.dart';
 import 'signup_page.dart';
 
 const _buttonColor = Color(0xFF4195CC);
@@ -282,6 +283,32 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _isLoading || _isGoogleLoading
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordPage(),
+                        ),
+                      );
+                    },
+              child: const Text(
+                'Esqueci minha senha',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _buttonColor,
+                  decoration: TextDecoration.underline,
+                  decorationColor: _buttonColor,
+                ),
+              ),
             ),
           ),
           if (_errorMessage != null) ...[
