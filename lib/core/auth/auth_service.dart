@@ -19,6 +19,8 @@ class AuthService {
   static final AuthService instance = AuthService._();
 
   static const allowedDomain = 'souunit.com.br';
+  static const googleProviderId = 'google.com';
+  static const passwordProviderId = 'password';
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
@@ -37,6 +39,24 @@ class AuthService {
     }
 
     return normalizedEmail.substring(atIndex + 1) == allowedDomain;
+  }
+
+  static bool userUsesGoogle(User? user) {
+    return user?.providerData.any(
+          (provider) => provider.providerId == googleProviderId,
+        ) ??
+        false;
+  }
+
+  static bool userUsesPassword(User? user) {
+    return user?.providerData.any(
+          (provider) => provider.providerId == passwordProviderId,
+        ) ??
+        false;
+  }
+
+  static bool canChangePassword(User? user) {
+    return userUsesPassword(user) && !userUsesGoogle(user);
   }
 
   Future<void> initializeGoogleSignIn() async {

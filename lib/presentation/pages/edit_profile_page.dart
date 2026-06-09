@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -66,17 +67,35 @@ class EditableProfileDetails {
   }
 
   factory EditableProfileDetails.fromUser(User? user) {
+    return EditableProfileDetails.fromUserData(user, null);
+  }
+
+  factory EditableProfileDetails.fromUserData(
+    User? user,
+    Map<String, dynamic>? data,
+  ) {
     final email = user?.email?.trim();
-    final resolvedEmail = (email != null && email.isNotEmpty)
+    final storedEmail = (data?['email'] as String?)?.trim();
+    final resolvedEmail = (storedEmail != null && storedEmail.isNotEmpty)
+        ? storedEmail
+        : (email != null && email.isNotEmpty)
         ? email
-        : 'gabriel.augusto@souunit.com.br';
+        : '';
     final displayName = user?.displayName?.trim();
+    final storedName = (data?['nome'] as String?)?.trim();
+    final resolvedName = (storedName != null && storedName.isNotEmpty)
+        ? storedName
+        : (displayName != null && displayName.isNotEmpty)
+        ? displayName
+        : _fallbackNameFromEmail(resolvedEmail);
 
     return EditableProfileDetails(
-      name: (displayName != null && displayName.isNotEmpty)
-          ? displayName
-          : _fallbackNameFromEmail(resolvedEmail),
+      name: resolvedName,
       email: resolvedEmail,
+      birthDate: data?['dataNascimento'] as String?,
+      gender: data?['genero'] as String?,
+      nationality: data?['nacionalidade'] as String?,
+      postalCode: data?['cep'] as String?,
     );
   }
 }
@@ -100,6 +119,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   bool _isSaving = false;
   String? _nameError;
+  String? _saveError;
 
   @override
   void initState() {
@@ -326,30 +346,75 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     setState(() {
       _isSaving = true;
+      _saveError = null;
     });
 
     final updatedProfile = _draftProfile;
     final user = FirebaseAuth.instance.currentUser;
 
     try {
-      if (user != null && trimmedName != (user.displayName ?? '').trim()) {
-        await user.updateDisplayName(trimmedName);
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'not-authenticated',
+          message: 'Usuario nao autenticado.',
+        );
       }
-    } on FirebaseAuthException {
-      // Keep the local profile update even if auth profile sync is unavailable.
-    } finally {
+
+      if (trimmedName != (user.displayName ?? '').trim()) {
+        try {
+          await user.updateDisplayName(trimmedName);
+        } on FirebaseAuthException {
+          // Firestore remains the app profile source even if Auth sync fails.
+        }
+      }
+
+      final db = FirebaseFirestore.instance;
+      final userRef = db.collection('usuarios').doc(user.uid);
+      final currentProfile = await userRef.get();
+      final grupoId = currentProfile.data()?['grupoId'] as String?;
+
+      await userRef.set({
+        'nome': trimmedName,
+        'email': user.email ?? updatedProfile.email,
+        'dataNascimento': updatedProfile.birthDate,
+        'genero': updatedProfile.gender,
+        'nacionalidade': updatedProfile.nationality,
+        'cep': updatedProfile.postalCode,
+        'atualizadoEm': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (grupoId != null && grupoId.isNotEmpty) {
+        await db
+            .collection('grupos')
+            .doc(grupoId)
+            .collection('membros')
+            .doc(user.uid)
+            .set({
+              'nome': trimmedName,
+              'email': user.email ?? updatedProfile.email,
+            }, SetOptions(merge: true));
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.pop(context, updatedProfile);
+    } on FirebaseException catch (error) {
       if (mounted) {
         setState(() {
           _isSaving = false;
+          _saveError = error.message ?? 'Nao foi possivel salvar o perfil.';
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _saveError = 'Nao foi possivel salvar o perfil.';
         });
       }
     }
-
-    if (!mounted) {
-      return;
-    }
-
-    Navigator.pop(context, updatedProfile);
   }
 
   @override
@@ -503,8 +568,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                     ),
                   ],
+                  if (_saveError != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _saveError!,
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 14),
-                  _SingleLineActionCard(text: profile.email, onTap: () {}),
+                  _SingleLineActionCard(text: profile.email),
                   const SizedBox(height: 14),
                   _SingleLineActionCard(
                     text: _gender ?? 'Genero',
@@ -602,10 +678,10 @@ class _ProfileCard extends StatelessWidget {
 }
 
 class _SingleLineActionCard extends StatelessWidget {
-  const _SingleLineActionCard({required this.text, required this.onTap});
+  const _SingleLineActionCard({required this.text, this.onTap});
 
   final String text;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -635,8 +711,10 @@ class _SingleLineActionCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              const _ChevronIcon(),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                const _ChevronIcon(),
+              ],
             ],
           ),
         ),
@@ -714,6 +792,10 @@ class _ChevronIcon extends StatelessWidget {
 }
 
 String _fallbackNameFromEmail(String email) {
+  if (email.trim().isEmpty) {
+    return 'Usuario AgendaCare';
+  }
+
   final localPart = email.split('@').first;
   final words = localPart
       .replaceAll(RegExp(r'[._-]+'), ' ')
@@ -723,7 +805,7 @@ String _fallbackNameFromEmail(String email) {
       .toList();
 
   if (words.isEmpty) {
-    return 'Gabriel Augusto';
+    return 'Usuario AgendaCare';
   }
 
   return words.join(' ');
