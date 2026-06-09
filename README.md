@@ -18,6 +18,6 @@ O objetivo do sistema é auxiliar famílias e cuidadores na organização de ati
 | 👨‍👩‍👧 GROUP | Gerenciamento de grupos familiares | Kauan | ✅ | https://youtu.be/tjEu5sHQfOI
 | ✅ TASK | Gestão de tarefas | Guilherme | ✅ | https://youtu.be/rwVL_TiUqw0
 | 🏠 HOME/AGENDA | Dashboard principal | Gustavo | ⬜ |
-| 🔔 NOTIFICATION | Sistema de notificações | Leonidas | ⬜ |
+| 🔔 NOTIFICATION | Sistema de notificações | Leonidas | ✅ |https://youtu.be/LeWAnIXs42U
 | 📜 HISTORY | Histórico de atividades | Iago | ✅ | https://youtu.be/4L_ovNZYGHg
 
