@@ -92,6 +92,11 @@ class TaskProvider extends ChangeNotifier {
 
       final docRef = await ref.add(taskWithCreator.toMap());
 
+      await NotificationService.instance.showInstantNotification(
+        title: 'Tarefa criada',
+        body: task.title,
+      );
+
       final taskDateTime = DateTime(
         task.date.year,
         task.date.month,
