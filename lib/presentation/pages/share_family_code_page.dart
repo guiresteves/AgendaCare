@@ -119,15 +119,30 @@ class _AddPersonsPageState extends State<AddPersonsPage> {
           });
 
       for (final dep in widget.dependentes) {
-        await db
-            .collection('grupos')
-            .doc(grupoRef.id)
-            .collection('dependentes')
-            .add({
-              'nome': dep.nome,
-              'usaApp': dep.usaApp,
-              'criadoEm': FieldValue.serverTimestamp(),
-            });
+        if (dep.usaApp) {
+          // Vai para membros como responsável
+          await db
+              .collection('grupos')
+              .doc(grupoRef.id)
+              .collection('membros')
+              .add({
+                'nome': dep.nome,
+                'papel': 'responsavel',
+                'email': '',
+                'entradaEm': FieldValue.serverTimestamp(),
+              });
+        } else {
+          // Vai para dependentes (não usa app)
+          await db
+              .collection('grupos')
+              .doc(grupoRef.id)
+              .collection('dependentes')
+              .add({
+                'nome': dep.nome,
+                'usaApp': false,
+                'criadoEm': FieldValue.serverTimestamp(),
+              });
+        }
       }
 
       if (!mounted) return;
