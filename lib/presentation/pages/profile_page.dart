@@ -11,11 +11,34 @@ const _primaryBlue = Color(0xFF4A97CF);
 const _textDark = Colors.black;
 const _textMuted = Color(0xFF7E7777);
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool _isSigningOut = false;
+
   Future<void> _desconectar() async {
+    if (_isSigningOut) {
+      return;
+    }
+
+    setState(() {
+      _isSigningOut = true;
+    });
+
     await AuthService.instance.signOut();
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isSigningOut = false;
+    });
   }
 
   String _profileSubtitle(EditableProfileDetails profile) {
@@ -299,10 +322,10 @@ class ProfilePage extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         _SimpleMenuTile(
-                          label: 'Desconectar',
-                          onTap: () {
-                            _desconectar();
-                          },
+                          label: _isSigningOut
+                              ? 'Desconectando...'
+                              : 'Desconectar',
+                          onTap: _isSigningOut ? null : _desconectar,
                           showChevron: false,
                           labelColor: Colors.redAccent,
                         ),
@@ -328,7 +351,7 @@ class _SimpleMenuTile extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool showChevron;
   final Color labelColor;
 

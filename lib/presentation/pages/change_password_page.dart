@@ -42,33 +42,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       _successMessage = null;
     });
 
-    final user = FirebaseAuth.instance.currentUser;
-    final email = user?.email;
-
-    if (user == null || email == null || email.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Usuario nao autenticado.';
-      });
-      return;
-    }
-
-    if (!AuthService.canChangePassword(user)) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Esta conta nao permite alteracao de senha no app.';
-      });
-      return;
-    }
-
     try {
-      final credential = EmailAuthProvider.credential(
-        email: email,
-        password: _currentPasswordController.text,
+      await AuthService.instance.changePassword(
+        currentPassword: _currentPasswordController.text,
+        newPassword: _newPasswordController.text,
       );
-
-      await user.reauthenticateWithCredential(credential);
-      await user.updatePassword(_newPasswordController.text);
 
       if (!mounted) return;
 
@@ -118,6 +96,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         return 'A nova senha e muito fraca.';
       case 'requires-recent-login':
         return 'Entre novamente na conta antes de alterar a senha.';
+      case 'not-authenticated':
+      case 'user-signed-out':
+        return 'Sua sessao expirou. Entre novamente para continuar.';
+      case 'operation-not-allowed':
+        return 'Esta conta nao permite alteracao de senha no app.';
+      case 'password-changed-session-expired':
+        return 'Senha alterada. Entre novamente para continuar.';
       default:
         return error.message ?? 'Nao foi possivel alterar a senha.';
     }

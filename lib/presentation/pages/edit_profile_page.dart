@@ -92,10 +92,10 @@ class EditableProfileDetails {
     return EditableProfileDetails(
       name: resolvedName,
       email: resolvedEmail,
-      birthDate: data?['dataNascimento'] as String?,
-      gender: data?['genero'] as String?,
-      nationality: data?['nacionalidade'] as String?,
-      postalCode: data?['cep'] as String?,
+      birthDate: _readOptionalString(data?['dataNascimento']),
+      gender: _readOptionalString(data?['genero']),
+      nationality: _readOptionalString(data?['nacionalidade']),
+      postalCode: _formatPostalCode(_readOptionalString(data?['cep'])),
     );
   }
 }
@@ -141,8 +141,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   EditableProfileDetails get _draftProfile {
-    return widget.initialProfile.copyWith(
+    return EditableProfileDetails(
       name: _nameController.text.trim(),
+      email: widget.initialProfile.email,
       birthDate: _birthDate,
       gender: _gender,
       nationality: _nationality,
@@ -225,7 +226,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   trailing: option == _gender
                       ? const Icon(Icons.check_rounded, color: _saveButtonColor)
                       : null,
-                  onTap: () => Navigator.pop(context, option),
+                  onTap: () => _popAfterUnfocus(context, option),
                 ),
               const SizedBox(height: 8),
             ],
@@ -255,7 +256,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     setState(() {
-      _nationality = result;
+      _nationality = _emptyToNull(result);
     });
   }
 
@@ -265,7 +266,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       initialValue: _postalCode,
       hintText: '00000-000',
       keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9-]'))],
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9-]')),
+        LengthLimitingTextInputFormatter(9),
+      ],
     );
 
     if (result == null || !mounted) {
@@ -273,7 +277,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     setState(() {
-      _postalCode = result;
+      _postalCode = _formatPostalCode(result);
     });
   }
 
@@ -314,13 +318,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => _popAfterUnfocus(context),
               child: const Text('Cancelar'),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: _saveButtonColor),
               onPressed: () {
-                Navigator.pop(context, controller.text.trim());
+                _popAfterUnfocus(context, controller.text.trim());
               },
               child: const Text('Salvar'),
             ),
@@ -373,15 +377,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final currentProfile = await userRef.get();
       final grupoId = currentProfile.data()?['grupoId'] as String?;
 
-      await userRef.set({
+      final profileData = <String, dynamic>{
         'nome': trimmedName,
         'email': user.email ?? updatedProfile.email,
         'dataNascimento': updatedProfile.birthDate,
         'genero': updatedProfile.gender,
-        'nacionalidade': updatedProfile.nationality,
-        'cep': updatedProfile.postalCode,
         'atualizadoEm': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      };
+
+      profileData['nacionalidade'] =
+          updatedProfile.nationality ?? FieldValue.delete();
+      profileData['cep'] = updatedProfile.postalCode ?? FieldValue.delete();
+
+      await userRef.set(profileData, SetOptions(merge: true));
 
       if (grupoId != null && grupoId.isNotEmpty) {
         await db
@@ -399,7 +407,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         return;
       }
 
-      Navigator.pop(context, updatedProfile);
+      _popAfterUnfocus(context, updatedProfile);
     } on FirebaseException catch (error) {
       if (mounted) {
         setState(() {
@@ -441,7 +449,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         alignment: Alignment.centerLeft,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(18),
-                          onTap: () => Navigator.maybePop(context),
+                          onTap: () => _maybePopAfterUnfocus(context),
                           child: SizedBox(
                             width: 34,
                             height: 34,
@@ -817,6 +825,51 @@ String _capitalizeWord(String value) {
   }
 
   return '${value[0].toUpperCase()}${value.substring(1).toLowerCase()}';
+}
+
+String? _readOptionalString(Object? value) {
+  if (value == null) {
+    return null;
+  }
+
+  return _emptyToNull(value.toString());
+}
+
+String? _emptyToNull(String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? null : trimmed;
+}
+
+String? _formatPostalCode(String? value) {
+  final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
+  if (digits.isEmpty) {
+    return null;
+  }
+
+  if (digits.length <= 5) {
+    return digits;
+  }
+
+  final normalizedDigits = digits.length > 8 ? digits.substring(0, 8) : digits;
+  return '${normalizedDigits.substring(0, 5)}-${normalizedDigits.substring(5)}';
+}
+
+void _popAfterUnfocus<T>(BuildContext context, [T? result]) {
+  FocusManager.instance.primaryFocus?.unfocus();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (context.mounted) {
+      Navigator.of(context).pop<T>(result);
+    }
+  });
+}
+
+void _maybePopAfterUnfocus(BuildContext context) {
+  FocusManager.instance.primaryFocus?.unfocus();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (context.mounted) {
+      Navigator.of(context).maybePop();
+    }
+  });
 }
 
 String _formatDate(DateTime date) {
