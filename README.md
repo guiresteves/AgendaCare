@@ -16,7 +16,7 @@ O objetivo do sistema é auxiliar famílias e cuidadores na organização de ati
 | 🔐 AUTH | Sistema de autenticação de usuários | Gabriel | ⬜ |
 | 👤 USER/CARE | Perfil e gerenciamento de usuários/Dependentes | Gabriel | ⬜ |
 | 👨‍👩‍👧 GROUP | Gerenciamento de grupos familiares | Kauan | ✅ | https://youtu.be/tjEu5sHQfOI
-| ✅ TASK | Gestão de tarefas | Guilherme | ⬜ |
+| ✅ TASK | Gestão de tarefas | Guilherme | ✅ | https://youtu.be/rwVL_TiUqw0
 | 🏠 HOME/AGENDA | Dashboard principal | Gustavo | ⬜ |
 | 🔔 NOTIFICATION | Sistema de notificações | Leonidas | ⬜ |
 | 📜 HISTORY | Histórico de atividades | Iago | ⬜ |

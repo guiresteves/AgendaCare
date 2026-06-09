@@ -26,14 +26,14 @@ class DefaultFirebaseOptions {
     projectId: 'agendacare-2fbf7',
     storageBucket: 'agendacare-2fbf7.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyD-43mzbfkQhNcw0crXTSvA3LF_Ecr7Sp0',
     appId: '1:47118712381:ios:1322bedc25433bd2407454',
     messagingSenderId: '47118712381',
     projectId: 'agendacare-2fbf7',
     storageBucket: 'agendacare-2fbf7.firebasestorage.app',
+    androidClientId: '47118712381-tffffosgj0njo0il6eluu2iv1i4ong6p.apps.googleusercontent.com',
+    iosClientId: '47118712381-sn2u05gr2kksfi65077f7e81bc1lh4g3.apps.googleusercontent.com',
     iosBundleId: 'com.example.agendacare',
   );
-
 }
