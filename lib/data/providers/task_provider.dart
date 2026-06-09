@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/notification/notification_service.dart';
 import '../models/task_model.dart';
 import '../models/person_model.dart';
 
@@ -89,7 +90,22 @@ class TaskProvider extends ChangeNotifier {
         createdByName: creatorName,
       );
 
-      await ref.add(taskWithCreator.toMap());
+      final docRef = await ref.add(taskWithCreator.toMap());
+
+      final taskDateTime = DateTime(
+        task.date.year,
+        task.date.month,
+        task.date.day,
+        task.time.hour,
+        task.time.minute,
+      );
+
+      await NotificationService.instance.scheduleTaskNotifications(
+        taskId: docRef.id.hashCode.abs(),
+        title: task.title,
+        description: task.description,
+        taskDateTime: taskDateTime,
+      );
     } catch (e) {
       debugPrint('Erro ao adicionar tarefa: $e');
     }
@@ -100,6 +116,27 @@ class TaskProvider extends ChangeNotifier {
       final ref = await _tasksRef();
       if (ref == null) return;
       await ref.doc(updated.id).update(updated.toMap());
+
+      final taskDateTime = DateTime(
+        updated.date.year,
+        updated.date.month,
+        updated.date.day,
+        updated.time.hour,
+        updated.time.minute,
+      );
+
+      final notificationId = updated.id.hashCode.abs();
+
+      await NotificationService.instance
+          .cancelTaskNotifications(notificationId);
+
+      await NotificationService.instance
+          .scheduleTaskNotifications(
+        taskId: notificationId,
+        title: updated.title,
+        description: updated.description,
+        taskDateTime: taskDateTime,
+      );
     } catch (e) {
       debugPrint('Erro ao atualizar tarefa: $e');
     }
@@ -109,6 +146,11 @@ class TaskProvider extends ChangeNotifier {
     try {
       final ref = await _tasksRef();
       if (ref == null) return;
+      final notificationId = id.hashCode.abs();
+
+      await NotificationService.instance
+          .cancelTaskNotifications(notificationId);
+
       await ref.doc(id).delete();
     } catch (e) {
       debugPrint('Erro ao excluir tarefa: $e');

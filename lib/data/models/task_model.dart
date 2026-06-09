@@ -127,4 +127,13 @@ class TaskModel {
     final m = time.minute.toString().padLeft(2, '0');
     return '$h:$m';
   }
+  DateTime get taskDateTime {
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+  }
 }
