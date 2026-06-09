@@ -11,6 +11,11 @@ class TaskModel {
     required this.responsibleIds,
     required this.dependentIds,
     this.isConfirmed = false,
+    this.createdById,      // ← novo
+    this.createdByName,    // ← novo
+    this.confirmedById,    // ← novo
+    this.confirmedByName,  // ← novo
+    this.confirmedAt,
   });
 
   final String id;
@@ -21,6 +26,13 @@ class TaskModel {
   final List<String> responsibleIds;
   final List<String> dependentIds;
   final bool isConfirmed;
+
+  // Auditoria
+  final String? createdById;
+  final String? createdByName;
+  final String? confirmedById;
+  final String? confirmedByName;
+  final DateTime? confirmedAt;
 
   // ── Converte para Map 
   Map<String, dynamic> toMap() {
@@ -35,20 +47,26 @@ class TaskModel {
       'responsibleIds': responsibleIds,
       'dependentIds': dependentIds,
       'isConfirmed': isConfirmed,
+
+      // Auditoria
+      if (createdById != null) 'createdById': createdById,
+      if (createdByName != null) 'createdByName': createdByName,
+      if (confirmedById != null) 'confirmedById': confirmedById,
+      if (confirmedByName != null) 'confirmedByName': confirmedByName,
+      if (confirmedAt != null) 'confirmedAt': Timestamp.fromDate(confirmedAt!),
     };
   }
 
   // ── Converte de Map — usado ao ler do Firestore 
   factory TaskModel.fromMap(String id, Map<String, dynamic> map) {
-    // Lê a data como Timestamp e converte para DateTime
     final timestamp = map['date'] as Timestamp?;
-    final date = timestamp?.toDate() ?? DateTime.now();
+    final confirmedAtTs = map['confirmedAt'] as Timestamp?;
 
     return TaskModel(
       id: id,
       title: map['title'] as String? ?? '',
       description: map['description'] as String? ?? '',
-      date: date,
+      date: timestamp?.toDate() ?? DateTime.now(),
       time: TimeOfDay(
         hour: map['timeHour'] as int? ?? 0,
         minute: map['timeMinute'] as int? ?? 0,
@@ -56,11 +74,17 @@ class TaskModel {
       responsibleIds: List<String>.from(map['responsibleIds'] ?? []),
       dependentIds: List<String>.from(map['dependentIds'] ?? []),
       isConfirmed: map['isConfirmed'] as bool? ?? false,
+      // Auditoria
+      createdById: map['createdById'] as String?,
+      createdByName: map['createdByName'] as String?,
+      confirmedById: map['confirmedById'] as String?,
+      confirmedByName: map['confirmedByName'] as String?,
+      confirmedAt: confirmedAtTs?.toDate(),
     );
   }
 
   // ── Cria uma cópia com campos alterados 
-  TaskModel copyWith({
+    TaskModel copyWith({
     String? title,
     String? description,
     DateTime? date,
@@ -68,6 +92,11 @@ class TaskModel {
     List<String>? responsibleIds,
     List<String>? dependentIds,
     bool? isConfirmed,
+    String? createdById,
+    String? createdByName,
+    String? confirmedById,
+    String? confirmedByName,
+    DateTime? confirmedAt,
   }) {
     return TaskModel(
       id: id,
@@ -78,6 +107,11 @@ class TaskModel {
       responsibleIds: responsibleIds ?? this.responsibleIds,
       dependentIds: dependentIds ?? this.dependentIds,
       isConfirmed: isConfirmed ?? this.isConfirmed,
+      createdById: createdById ?? this.createdById,
+      createdByName: createdByName ?? this.createdByName,
+      confirmedById: confirmedById ?? this.confirmedById,
+      confirmedByName: confirmedByName ?? this.confirmedByName,
+      confirmedAt: confirmedAt ?? this.confirmedAt,
     );
   }
 
