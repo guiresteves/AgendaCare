@@ -23,6 +23,68 @@ class _HomePageState extends State<HomePage> {
   List<PersonModel> _responsaveis = [];
   List<PersonModel> _dependentes = [];
 
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedDate = DateTime(now.year, now.month, now.day);
+  }
+
+  bool _isSameDay(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+
+  List<_WeekDay> _buildWeekDays() {
+    const labels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    final daysFromSunday = _selectedDate.weekday % 7;
+    final startOfWeek = _selectedDate.subtract(Duration(days: daysFromSunday));
+
+    return List.generate(7, (index) {
+      final date = startOfWeek.add(Duration(days: index));
+      return _WeekDay(
+        label: labels[index],
+        date: date,
+        selected: _isSameDay(date, _selectedDate),
+      );
+    });
+  }
+
+  void _onSelectDate(DateTime date) {
+    setState(() {
+      _selectedDate = DateTime(date.year, date.month, date.day);
+    });
+  }
+
+  String _formatHeaderDate(DateTime date) {
+    const monthNames = [
+      'janeiro',
+      'fevereiro',
+      'marco',
+      'abril',
+      'maio',
+      'junho',
+      'julho',
+      'agosto',
+      'setembro',
+      'outubro',
+      'novembro',
+      'dezembro',
+    ];
+
+    final day = date.day.toString().padLeft(2, '0');
+    return '$day de ${monthNames[date.month - 1]}';
+  }
+
+  int _compareByTime(TaskModel first, TaskModel second) {
+    final firstMinutes = (first.time.hour * 60) + first.time.minute;
+    final secondMinutes = (second.time.hour * 60) + second.time.minute;
+    return firstMinutes.compareTo(secondMinutes);
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.read<TaskProvider>();
@@ -61,9 +123,9 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           const SizedBox(height: 18),
-                          const Center(
+                          Center(
                             child: Text(
-                              '06 de abril',
+                              _formatHeaderDate(_selectedDate),
                               style: TextStyle(
                                 color: agendaBrandBlue,
                                 fontSize: 16,
@@ -72,7 +134,10 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           const SizedBox(height: 14),
-                          const WeekSelector(),
+                          _WeekSelector(
+                            days: _buildWeekDays(),
+                            onSelectDate: _onSelectDate,
+                          ),
                           const SizedBox(height: 28),
                           const Text(
                             'Tarefas de hoje',
@@ -137,7 +202,15 @@ class _HomePageState extends State<HomePage> {
                                   );
                                 }
 
-                                final tasks = taskSnap.data ?? [];
+                                final tasks = (taskSnap.data ?? [])
+                                    .where(
+                                      (task) => _isSameDay(
+                                        task.date,
+                                        _selectedDate,
+                                      ),
+                                    )
+                                    .toList()
+                                  ..sort(_compareByTime);
 
                                 // Vazio
                                 if (tasks.isEmpty) {
@@ -230,64 +303,83 @@ class _EmptyTasksMessage extends StatelessWidget {
 
 // ── WeekSelector ──────────────────────────────────────────────────────────────
 
-class WeekSelector extends StatelessWidget {
-  const WeekSelector({super.key});
+class _WeekSelector extends StatelessWidget {
+  const _WeekSelector({
+    required this.days,
+    required this.onSelectDate,
+  });
+
+  final List<_WeekDay> days;
+  final ValueChanged<DateTime> onSelectDate;
 
   @override
   Widget build(BuildContext context) {
-    const days = [
-      _WeekDay('D', '05'),
-      _WeekDay('S', '06', selected: true),
-      _WeekDay('T', '07'),
-      _WeekDay('Q', '08'),
-      _WeekDay('Q', '09'),
-      _WeekDay('S', '06'),
-      _WeekDay('S', '10'),
-    ];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: days.map((day) => _DayItem(day: day)).toList(),
+      children: days
+          .map(
+            (day) => _DayItem(
+              day: day,
+              onTap: () => onSelectDate(day.date),
+            ),
+          )
+          .toList(),
     );
   }
 }
 
 class _DayItem extends StatelessWidget {
-  const _DayItem({required this.day});
+  const _DayItem({required this.day, required this.onTap});
   final _WeekDay day;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(day.label, style: const TextStyle(fontSize: 12)),
-        const SizedBox(height: 5),
-        Container(
-          width: 36,
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: day.selected ? agendaBlue : Colors.transparent,
-            shape: BoxShape.circle,
-          ),
-          child: Text(
-            day.number,
-            style: TextStyle(
-              color: day.selected ? Colors.white : Colors.black,
-              fontSize: 17,
-              fontWeight: FontWeight.w500,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Column(
+          children: [
+            Text(day.label, style: const TextStyle(fontSize: 12)),
+            const SizedBox(height: 5),
+            Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: day.selected ? agendaBlue : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                day.number,
+                style: TextStyle(
+                  color: day.selected ? Colors.white : Colors.black,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
 
 class _WeekDay {
-  const _WeekDay(this.label, this.number, {this.selected = false});
+  const _WeekDay({
+    required this.label,
+    required this.date,
+    this.selected = false,
+  });
+
   final String label;
-  final String number;
+  final DateTime date;
   final bool selected;
+
+  String get number => date.day.toString().padLeft(2, '0');
 }
 
 // ── TaskCard ──────────────────────────────────────────────────────────────────
@@ -902,13 +994,15 @@ class _DeleteConfirmSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 36),
-      child: Column(
+      padding: EdgeInsets.fromLTRB(24, 20, 24, 24 + bottomInset),
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
@@ -976,6 +1070,7 @@ class _DeleteConfirmSheet extends StatelessWidget {
             ],
           ),
         ],
+        ),
       ),
     );
   }
