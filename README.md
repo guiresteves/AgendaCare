@@ -13,8 +13,8 @@ O objetivo do sistema é auxiliar famílias e cuidadores na organização de ati
 | Módulo | Descrição | Responsável(s) | Status | Link do video no youtube |
 |---|---|---|---| ---|
 | 🛠️ SETUP | Configuração inicial do projeto e arquitetura base | Guilherme | ✅ |
-| 🔐 AUTH | Sistema de autenticação de usuários | Gabriel | ⬜ |
-| 👤 USER/CARE | Perfil e gerenciamento de usuários/Dependentes | Gabriel | ⬜ |
+| 🔐 AUTH | Sistema de autenticação de usuários | Gabriel | ✅ | https://youtu.be/iBKUthmqSgw
+| 👤 USER/CARE | Perfil e gerenciamento de usuários/Dependentes | Gabriel | ✅ | https://youtu.be/iBKUthmqSgw
 | 👨‍👩‍👧 GROUP | Gerenciamento de grupos familiares | Kauan | ✅ | https://youtu.be/tjEu5sHQfOI
 | ✅ TASK | Gestão de tarefas | Guilherme | ✅ | https://youtu.be/rwVL_TiUqw0
 | 🏠 HOME/AGENDA | Dashboard principal | Gustavo | ⬜ |
