@@ -10,15 +10,14 @@ O objetivo do sistema é auxiliar famílias e cuidadores na organização de ati
 
 # 🗂️ Estrutura do Backlog
 
-| Módulo | Descrição | Responsável(s) | Status |
-|---|---|---|---|
+| Módulo | Descrição | Responsável(s) | Status | Link do video no youtube |
+|---|---|---|--| ---|
 | 🛠️ SETUP | Configuração inicial do projeto e arquitetura base | Guilherme | ✅ |
-| 🔐 AUTH | Sistema de autenticação de usuários | Gabriel | ⬜ |
-| 👤 USER/CARE | Perfil e gerenciamento de usuários/Dependentes | Gabriel | ⬜ |
-| 👨‍👩‍👧 GROUP | Gerenciamento de grupos familiares | Kauan | ⬜ |
-| ✅ TASK | Gestão de tarefas | Guilherme | ⬜ |
+| 🔐 AUTH | Sistema de autenticação de usuários | Gabriel | ✅ | https://youtu.be/jIIKd6T0hoM
+| 👤 USER/CARE | Perfil e gerenciamento de usuários/Dependentes | Gabriel | ✅ | https://youtu.be/jIIKd6T0hoM
+| 👨‍👩‍👧 GROUP | Gerenciamento de grupos familiares | Kauan | ✅ | https://youtu.be/6SRlOGKgCxU
+| ✅ TASK | Gestão de tarefas | Guilherme | ✅ | https://youtu.be/IV3jW4VnYDY
 | 🏠 HOME/AGENDA | Dashboard principal | Gustavo | ⬜ |
-| 🔔 NOTIFICATION | Sistema de notificações | Leonidas | ⬜ |
-| 📜 HISTORY | Histórico de atividades | Iago | ⬜ |
-| 
+| 🔔 NOTIFICATION | Sistema de notificações | Leonidas | ✅ |https://youtu.be/LeWAnIXs42U
+| 📜 HISTORY | Histórico de atividades | Iago | ✅ | https://youtu.be/4L_ovNZYGHg
 

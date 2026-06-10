@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/auth/auth_gate.dart';
 import '../widgets/gradient_screen_layout.dart';
-import './content_page/content_page.dart';
 
 class FamilyWelcomePage extends StatelessWidget {
   const FamilyWelcomePage({super.key});
@@ -62,11 +62,10 @@ class FamilyWelcomePage extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
+                  Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const ContentPage(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const AuthGate()),
+                    (route) => false,
                   );
                 },
                 style: ElevatedButton.styleFrom(

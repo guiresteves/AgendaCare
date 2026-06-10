@@ -1,9 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/auth/auth_service.dart';
 import '../widgets/gradient_screen_layout.dart';
 
 const _buttonColor = Color(0xFF4195CC);
-const _mutedTextColor = Color(0xFF7E7777);
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -41,14 +42,30 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       _successMessage = null;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      await AuthService.instance.changePassword(
+        currentPassword: _currentPasswordController.text,
+        newPassword: _newPasswordController.text,
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-      _successMessage = 'Senha alterada com sucesso!';
-    });
+      _currentPasswordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+
+      setState(() {
+        _isLoading = false;
+        _successMessage = 'Senha alterada com sucesso!';
+      });
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+        _errorMessage = _mapPasswordError(error);
+      });
+    }
   }
 
   String? _validarSenhaAtual(String? value) {
@@ -58,14 +75,37 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   String? _validarNovaSenha(String? value) {
     if ((value ?? '').isEmpty) return 'Informe a nova senha.';
-    if ((value ?? '').length < 6) return 'A senha precisa ter pelo menos 6 caracteres.';
+    if ((value ?? '').length < 6) {
+      return 'A senha precisa ter pelo menos 6 caracteres.';
+    }
     return null;
   }
 
   String? _validarConfirmacao(String? value) {
     if ((value ?? '').isEmpty) return 'Confirme a nova senha.';
-    if (value != _newPasswordController.text) return 'As senhas não coincidem.';
+    if (value != _newPasswordController.text) return 'As senhas nao coincidem.';
     return null;
+  }
+
+  String _mapPasswordError(FirebaseAuthException error) {
+    switch (error.code) {
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'Senha atual incorreta.';
+      case 'weak-password':
+        return 'A nova senha e muito fraca.';
+      case 'requires-recent-login':
+        return 'Entre novamente na conta antes de alterar a senha.';
+      case 'not-authenticated':
+      case 'user-signed-out':
+        return 'Sua sessao expirou. Entre novamente para continuar.';
+      case 'operation-not-allowed':
+        return 'Esta conta nao permite alteracao de senha no app.';
+      case 'password-changed-session-expired':
+        return 'Senha alterada. Entre novamente para continuar.';
+      default:
+        return error.message ?? 'Nao foi possivel alterar a senha.';
+    }
   }
 
   InputDecoration _inputDecoration({required String hintText}) {
@@ -169,7 +209,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   textInputAction: TextInputAction.done,
                   validator: _validarConfirmacao,
                   onFieldSubmitted: (_) => _alterar(),
-                  decoration: _inputDecoration(hintText: 'Confirmar nova senha'),
+                  decoration: _inputDecoration(
+                    hintText: 'Confirmar nova senha',
+                  ),
                 ),
               ],
             ),
@@ -213,17 +255,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             ),
             child: _isLoading
                 ? const SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
                 : const Text(
-              'Alterar',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-            ),
+                    'Alterar',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                  ),
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -66,17 +67,35 @@ class EditableProfileDetails {
   }
 
   factory EditableProfileDetails.fromUser(User? user) {
+    return EditableProfileDetails.fromUserData(user, null);
+  }
+
+  factory EditableProfileDetails.fromUserData(
+    User? user,
+    Map<String, dynamic>? data,
+  ) {
     final email = user?.email?.trim();
-    final resolvedEmail = (email != null && email.isNotEmpty)
+    final storedEmail = (data?['email'] as String?)?.trim();
+    final resolvedEmail = (storedEmail != null && storedEmail.isNotEmpty)
+        ? storedEmail
+        : (email != null && email.isNotEmpty)
         ? email
-        : 'gabriel.augusto@souunit.com.br';
+        : '';
     final displayName = user?.displayName?.trim();
+    final storedName = (data?['nome'] as String?)?.trim();
+    final resolvedName = (storedName != null && storedName.isNotEmpty)
+        ? storedName
+        : (displayName != null && displayName.isNotEmpty)
+        ? displayName
+        : _fallbackNameFromEmail(resolvedEmail);
 
     return EditableProfileDetails(
-      name: (displayName != null && displayName.isNotEmpty)
-          ? displayName
-          : _fallbackNameFromEmail(resolvedEmail),
+      name: resolvedName,
       email: resolvedEmail,
+      birthDate: _readOptionalString(data?['dataNascimento']),
+      gender: _readOptionalString(data?['genero']),
+      nationality: _readOptionalString(data?['nacionalidade']),
+      postalCode: _formatPostalCode(_readOptionalString(data?['cep'])),
     );
   }
 }
@@ -100,6 +119,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   bool _isSaving = false;
   String? _nameError;
+  String? _saveError;
 
   @override
   void initState() {
@@ -121,8 +141,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   EditableProfileDetails get _draftProfile {
-    return widget.initialProfile.copyWith(
+    return EditableProfileDetails(
       name: _nameController.text.trim(),
+      email: widget.initialProfile.email,
       birthDate: _birthDate,
       gender: _gender,
       nationality: _nationality,
@@ -205,7 +226,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   trailing: option == _gender
                       ? const Icon(Icons.check_rounded, color: _saveButtonColor)
                       : null,
-                  onTap: () => Navigator.pop(context, option),
+                  onTap: () => _popAfterUnfocus(context, option),
                 ),
               const SizedBox(height: 8),
             ],
@@ -235,7 +256,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     setState(() {
-      _nationality = result;
+      _nationality = _emptyToNull(result);
     });
   }
 
@@ -245,7 +266,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       initialValue: _postalCode,
       hintText: '00000-000',
       keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9-]'))],
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9-]')),
+        LengthLimitingTextInputFormatter(9),
+      ],
     );
 
     if (result == null || !mounted) {
@@ -253,7 +277,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     setState(() {
-      _postalCode = result;
+      _postalCode = _formatPostalCode(result);
     });
   }
 
@@ -294,13 +318,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => _popAfterUnfocus(context),
               child: const Text('Cancelar'),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: _saveButtonColor),
               onPressed: () {
-                Navigator.pop(context, controller.text.trim());
+                _popAfterUnfocus(context, controller.text.trim());
               },
               child: const Text('Salvar'),
             ),
@@ -326,30 +350,79 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     setState(() {
       _isSaving = true;
+      _saveError = null;
     });
 
     final updatedProfile = _draftProfile;
     final user = FirebaseAuth.instance.currentUser;
 
     try {
-      if (user != null && trimmedName != (user.displayName ?? '').trim()) {
-        await user.updateDisplayName(trimmedName);
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'not-authenticated',
+          message: 'Usuario nao autenticado.',
+        );
       }
-    } on FirebaseAuthException {
-      // Keep the local profile update even if auth profile sync is unavailable.
-    } finally {
+
+      if (trimmedName != (user.displayName ?? '').trim()) {
+        try {
+          await user.updateDisplayName(trimmedName);
+        } on FirebaseAuthException {
+          // Firestore remains the app profile source even if Auth sync fails.
+        }
+      }
+
+      final db = FirebaseFirestore.instance;
+      final userRef = db.collection('usuarios').doc(user.uid);
+      final currentProfile = await userRef.get();
+      final grupoId = currentProfile.data()?['grupoId'] as String?;
+
+      final profileData = <String, dynamic>{
+        'nome': trimmedName,
+        'email': user.email ?? updatedProfile.email,
+        'dataNascimento': updatedProfile.birthDate,
+        'genero': updatedProfile.gender,
+        'atualizadoEm': FieldValue.serverTimestamp(),
+      };
+
+      profileData['nacionalidade'] =
+          updatedProfile.nationality ?? FieldValue.delete();
+      profileData['cep'] = updatedProfile.postalCode ?? FieldValue.delete();
+
+      await userRef.set(profileData, SetOptions(merge: true));
+
+      if (grupoId != null && grupoId.isNotEmpty) {
+        await db
+            .collection('grupos')
+            .doc(grupoId)
+            .collection('membros')
+            .doc(user.uid)
+            .set({
+              'nome': trimmedName,
+              'email': user.email ?? updatedProfile.email,
+            }, SetOptions(merge: true));
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      _popAfterUnfocus(context, updatedProfile);
+    } on FirebaseException catch (error) {
       if (mounted) {
         setState(() {
           _isSaving = false;
+          _saveError = error.message ?? 'Nao foi possivel salvar o perfil.';
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _saveError = 'Nao foi possivel salvar o perfil.';
         });
       }
     }
-
-    if (!mounted) {
-      return;
-    }
-
-    Navigator.pop(context, updatedProfile);
   }
 
   @override
@@ -376,7 +449,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         alignment: Alignment.centerLeft,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(18),
-                          onTap: () => Navigator.maybePop(context),
+                          onTap: () => _maybePopAfterUnfocus(context),
                           child: SizedBox(
                             width: 34,
                             height: 34,
@@ -503,8 +576,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                     ),
                   ],
+                  if (_saveError != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _saveError!,
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 14),
-                  _SingleLineActionCard(text: profile.email, onTap: () {}),
+                  _SingleLineActionCard(text: profile.email),
                   const SizedBox(height: 14),
                   _SingleLineActionCard(
                     text: _gender ?? 'Genero',
@@ -602,10 +686,10 @@ class _ProfileCard extends StatelessWidget {
 }
 
 class _SingleLineActionCard extends StatelessWidget {
-  const _SingleLineActionCard({required this.text, required this.onTap});
+  const _SingleLineActionCard({required this.text, this.onTap});
 
   final String text;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -635,8 +719,10 @@ class _SingleLineActionCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              const _ChevronIcon(),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                const _ChevronIcon(),
+              ],
             ],
           ),
         ),
@@ -714,6 +800,10 @@ class _ChevronIcon extends StatelessWidget {
 }
 
 String _fallbackNameFromEmail(String email) {
+  if (email.trim().isEmpty) {
+    return 'Usuario AgendaCare';
+  }
+
   final localPart = email.split('@').first;
   final words = localPart
       .replaceAll(RegExp(r'[._-]+'), ' ')
@@ -723,7 +813,7 @@ String _fallbackNameFromEmail(String email) {
       .toList();
 
   if (words.isEmpty) {
-    return 'Gabriel Augusto';
+    return 'Usuario AgendaCare';
   }
 
   return words.join(' ');
@@ -735,6 +825,51 @@ String _capitalizeWord(String value) {
   }
 
   return '${value[0].toUpperCase()}${value.substring(1).toLowerCase()}';
+}
+
+String? _readOptionalString(Object? value) {
+  if (value == null) {
+    return null;
+  }
+
+  return _emptyToNull(value.toString());
+}
+
+String? _emptyToNull(String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? null : trimmed;
+}
+
+String? _formatPostalCode(String? value) {
+  final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
+  if (digits.isEmpty) {
+    return null;
+  }
+
+  if (digits.length <= 5) {
+    return digits;
+  }
+
+  final normalizedDigits = digits.length > 8 ? digits.substring(0, 8) : digits;
+  return '${normalizedDigits.substring(0, 5)}-${normalizedDigits.substring(5)}';
+}
+
+void _popAfterUnfocus<T>(BuildContext context, [T? result]) {
+  FocusManager.instance.primaryFocus?.unfocus();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (context.mounted) {
+      Navigator.of(context).pop<T>(result);
+    }
+  });
+}
+
+void _maybePopAfterUnfocus(BuildContext context) {
+  FocusManager.instance.primaryFocus?.unfocus();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (context.mounted) {
+      Navigator.of(context).maybePop();
+    }
+  });
 }
 
 String _formatDate(DateTime date) {
